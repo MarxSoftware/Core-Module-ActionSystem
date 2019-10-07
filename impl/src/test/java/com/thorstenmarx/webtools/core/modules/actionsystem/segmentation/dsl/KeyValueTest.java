@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.actions.segmentation.dsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
 
 /*-
  * #%L
@@ -23,7 +23,6 @@ package com.thorstenmarx.webtools.actions.segmentation.dsl;
  */
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.thorstenmarx.webtools.actions.segmentation.mocks.MockedExecutor;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
@@ -35,6 +34,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.Abstract
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockDataLayer;
+import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.Arrays;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;

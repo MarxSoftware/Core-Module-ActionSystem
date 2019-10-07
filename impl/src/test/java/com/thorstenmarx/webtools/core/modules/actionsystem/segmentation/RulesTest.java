@@ -22,7 +22,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
  * #L%
  */
 import com.alibaba.fastjson.JSONObject;
-import com.thorstenmarx.webtools.actions.segmentation.mocks.MockedExecutor;
 import java.util.HashMap;
 import java.util.Map;
 import org.testng.annotations.AfterMethod;
@@ -39,6 +38,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockDataLayer;
+import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

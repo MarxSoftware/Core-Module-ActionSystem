@@ -22,7 +22,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
  * #L%
  */
 import com.alibaba.fastjson.JSONObject;
-import com.thorstenmarx.webtools.actions.segmentation.mocks.MockedExecutor;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
@@ -37,7 +36,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockDataLayer;
-import java.lang.module.Configuration;
+import com.thorstenmarx.webtools.test.MockedExecutor;
 import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;

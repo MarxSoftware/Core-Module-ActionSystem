@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.actions.segmentation.dsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
 
 /*-
  * #%L
@@ -21,7 +21,6 @@ package com.thorstenmarx.webtools.actions.segmentation.dsl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.thorstenmarx.webtools.actions.segmentation.mocks.MockedExecutor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
@@ -36,6 +35,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.Abstract
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockDataLayer;
+import com.thorstenmarx.webtools.test.MockedExecutor;
 import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
