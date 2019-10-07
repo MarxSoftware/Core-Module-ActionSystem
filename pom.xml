@@ -139,9 +139,12 @@
 	</build>
 	<repositories>
 		<repository>
-			<id>oracleReleases</id>
-			<name>Oracle Released Java Packages</name>
-			<url>http://download.oracle.com/maven</url>
+			<id>wp-digitalexperience-ftp</id>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<url>ftp://wp-digitalexperience.com/htdocs/wp-digitalexperience/maven2</url>
 			<layout>default</layout>
 		</repository>
 	</repositories>
