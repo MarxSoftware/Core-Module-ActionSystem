@@ -105,12 +105,15 @@ public class SegmentationWorkerThread extends Thread {
 
 		
 		userSegments.forEach((user, segmentSet) -> {
+			// TODO: das hier genügt nicht, in dem Fall werden ja Benutzer ohne neue Segmente nicht aus dem Cache entfernt
 			cachelayer.invalidate(CacheKey.key(user, SegmentData.KEY));
 			segmentSet.forEach((s) -> {
 				final SegmentData segmentData = new SegmentData();
 				AdvancedSegment seg = (AdvancedSegment) segmentMap.get(s);
 				segmentData.setSegment(new SegmentData.Segment(seg.getName(), seg.getExternalId(), seg.getId()));
-
+				
+				System.out.println(seg.getName());
+				
 				cachelayer.add(CacheKey.key(user, SegmentData.KEY), segmentData, SegmentData.class, 10, TimeUnit.MINUTES);
 			});
 		});

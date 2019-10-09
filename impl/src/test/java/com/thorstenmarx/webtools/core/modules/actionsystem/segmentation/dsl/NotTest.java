@@ -150,7 +150,7 @@ public class NotTest extends AbstractTest{
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
+		Awaitility.await().atMost(1000, TimeUnit.SECONDS).until(() ->
 				!cachelayer.exists(CacheKey.key("notKlaus", SegmentData.KEY))
 		);
 	}
