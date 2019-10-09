@@ -28,11 +28,14 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
@@ -57,7 +60,7 @@ public class CategoryTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 	private String search_id;
 	private String notsearch_id;
 
@@ -96,9 +99,9 @@ public class CategoryTest extends AbstractTest {
 		
 		System.out.println("service: " + service.all());
 		
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -138,8 +141,8 @@ public class CategoryTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 		Thread.sleep(2000l);
-		Optional<List<SegmentData>> list = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class);
-		assertThat(list).isNotPresent();
+		List<SegmentData> list = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		assertThat(list).isEmpty();
 		
 		event = new JSONObject();
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
@@ -151,14 +154,12 @@ public class CategoryTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		datalayer.remove(USER_ID, SegmentData.KEY);
-		
-		await(datalayer, USER_ID, 1);
+		await(cachelayer, USER_ID, 1);
 
 		
-		list = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class);
-		assertThat(list).isPresent();
-		Set<String> segments = getRawSegments(list.get());
+		list = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		assertThat(list).isNotEmpty();
+		Set<String> segments = getRawSegments(list);
 		assertThat(segments).isNotNull();
 		assertThat(segments).containsExactly(search_id);
 	}

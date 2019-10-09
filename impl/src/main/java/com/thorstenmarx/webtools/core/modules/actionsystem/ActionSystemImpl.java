@@ -36,6 +36,7 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.TrackedEvent;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.api.datalayer.Expirable;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -83,30 +84,19 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 	private final Map<String, EventAction> actions = new ConcurrentHashMap<>();
 	private final MBassador mBassador;
 	private ActionWorkerThread actionWorker;
-	private final DataLayer datalayer;
+	private final CacheLayer cachelayer;
 
 	private final GraalDSL dslRunner;
 	
-	private final ScheduledFuture<?> cleanupScheduler;
-
-	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final DataLayer datalayer, final Executor executor) {
+	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final CacheLayer cachelayer, final Executor executor) {
 		this.moduleManager = moduleManager;
 		this.mBassador = mBassador;
 		this.analyticsDb = analyticsDb;
 		this.segmentService = segmentService;
-		this.datalayer = datalayer;
+		this.cachelayer = cachelayer;
 		segments.addAll(segmentService.all());
 		segmentService.addEventListener(this);
 		this.dslRunner = new GraalDSL(moduleManager, mBassador);
-
-		cleanupScheduler = executor.scheduleFixedDelay(() -> {
-			datalayer.each((uid, data) -> {
-				if (((Expirable) data).isExpired()) {
-					datalayer.remove(uid, SegmentData.KEY);
-				}
-			}, SegmentData.KEY, SegmentData.class
-			);
-		}, 1, 10, TimeUnit.MINUTES);
 	}
 
 	public void addAction(final String id, final String event, final String dsl) throws ActionException {
@@ -156,11 +146,11 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 
 	@Override
 	public void start() {
-		segmentationWorker = new SegmentationWorkerThread(1, analyticsDb, this, moduleManager, this.datalayer);
+		segmentationWorker = new SegmentationWorkerThread(1, analyticsDb, this, moduleManager, this.cachelayer);
 		segmentationWorker.start();
 
-		actionWorker = new ActionWorkerThread(0, analyticsDb, this, moduleManager);
-		actionWorker.start();
+//		actionWorker = new ActionWorkerThread(0, analyticsDb, this, moduleManager);
+//		actionWorker.start();
 
 		this.mBassador.subscribe(this);
 	}
@@ -193,12 +183,11 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 	@Override
 	public void close() {
 		
-		cleanupScheduler.cancel(true);
 		
 		segmentationWorker.shutdown();
 //		segmentationWorker.interrupt();
 
-		actionWorker.shutdown();
+//		actionWorker.shutdown();
 //		actionWorker.interrupt();
 
 		segmentService.removeEventListener(this);

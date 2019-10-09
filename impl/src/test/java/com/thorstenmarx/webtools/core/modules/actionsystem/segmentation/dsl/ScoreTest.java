@@ -29,11 +29,14 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import static org.assertj.core.api.Assertions.*;
@@ -58,7 +61,7 @@ public class ScoreTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 	private String demoSeg_id;
 
 	@BeforeClass
@@ -83,9 +86,9 @@ public class ScoreTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -130,9 +133,9 @@ public class ScoreTest extends AbstractTest {
 
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(datalayer, "peter", 1);
+		await(cachelayer, "peter", 1);
 
-		List<SegmentData> data = datalayer.list("peter", SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> data = cachelayer.list(CacheKey.key("peter", SegmentData.KEY), SegmentData.class);
 		Set<String> segments = getRawSegments(data);
 		assertThat(segments).contains(demoSeg_id);
 

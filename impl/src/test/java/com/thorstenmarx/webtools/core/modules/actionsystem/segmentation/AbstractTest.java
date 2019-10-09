@@ -25,9 +25,11 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.entities.Entities;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.test.MockEntities;
 import java.util.List;
 import java.util.Set;
@@ -63,14 +65,14 @@ public abstract class AbstractTest {
 		return tester.getId();
 	}
 	
-	protected void await(final DataLayer datalayer, final String USER_ID, final int count) {
+	protected void await(final CacheLayer cachelayer, final String USER_ID, final int count) {
 		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
-				datalayer.exists(USER_ID, SegmentData.KEY)
-						&& datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get().size() == count
+				cachelayer.exists(CacheKey.key(USER_ID, SegmentData.KEY))
+						&& cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class).size() == count
 		);
 	}
 	
 	protected static Set<String> getRawSegments(List<SegmentData> data) {
-		return data.stream().map(SegmentData::getSegments).flatMap(s -> s.stream()).collect(Collectors.toSet());
+		return data.stream().map(SegmentData::getSegment).map((s) -> s.id).collect(Collectors.toSet());
 	}
 }

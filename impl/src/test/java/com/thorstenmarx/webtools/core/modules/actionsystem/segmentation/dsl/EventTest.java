@@ -27,11 +27,14 @@ import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
@@ -55,7 +58,7 @@ public class EventTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 
 	String segment_id;
 
@@ -75,9 +78,9 @@ public class EventTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -118,14 +121,14 @@ public class EventTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(datalayer.exists("peter2", SegmentData.KEY)).isFalse();
+		assertThat(cachelayer.exists(CacheKey.key("peter2", SegmentData.KEY))).isFalse();
 
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(datalayer, "peter2", 1);
+		await(cachelayer, "peter2", 1);
 
-		List<SegmentData> getList = datalayer.list("peter2", SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> getList = cachelayer.list(CacheKey.key("peter2", SegmentData.KEY), SegmentData.class);
 		Set<String> segments = getRawSegments(getList);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_id);

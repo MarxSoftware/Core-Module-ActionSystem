@@ -23,16 +23,19 @@ package com.thorstenmarx.webtools.core.modules.actionsystem;
  */
 import com.google.common.collect.Sets;
 import com.thorstenmarx.modules.api.ModuleManager;
+import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -55,18 +58,18 @@ public class SegmentationWorkerThread extends Thread {
 	private final AnalyticsDB db;
 	private final ActionSystemImpl actionSystem;
 	private final ModuleManager moduleManager;
-	private final DataLayer datalayer;
+	private final CacheLayer cachelayer;
 	private final GraalDSL dslRunner;
 
 	private boolean shutdown = false;
 
 	private SegmentCalculator segmentCalculator;
 
-	public SegmentationWorkerThread(int index, final AnalyticsDB db, final ActionSystemImpl actionSystem, final ModuleManager moduleManager, final DataLayer datalayer) {
+	public SegmentationWorkerThread(int index, final AnalyticsDB db, final ActionSystemImpl actionSystem, final ModuleManager moduleManager, final CacheLayer cachelayer) {
 		this.db = db;
 		this.actionSystem = actionSystem;
 		this.moduleManager = moduleManager;
-		this.datalayer = datalayer;
+		this.cachelayer = cachelayer;
 		this.dslRunner = new GraalDSL(moduleManager, null);
 		setDaemon(true);
 		this.workerName = CONSUMER_NAME + "_" + index;
@@ -100,20 +103,20 @@ public class SegmentationWorkerThread extends Thread {
 		final Map<String, Set<String>> userSegments = new ConcurrentHashMap<>();
 		advancedSegments.stream().filter(s -> s.isActive()).forEach((segment) -> handleSegment(segment, userSegments));
 
-		datalayer.clear(SegmentData.KEY);
+		
 		userSegments.forEach((user, segmentSet) -> {
-			datalayer.remove(user, SegmentData.KEY);
+			cachelayer.invalidate(CacheKey.key(user, SegmentData.KEY));
 			segmentSet.forEach((s) -> {
 				final SegmentData segmentData = new SegmentData();
 				AdvancedSegment seg = (AdvancedSegment) segmentMap.get(s);
-				long validTo = System.currentTimeMillis() + seg.startTimeWindow().millis();
-				segmentData.addSegment(s, seg.getExternalId(), validTo);
+				segmentData.setSegment(new SegmentData.Segment(seg.getName(), seg.getExternalId(), seg.getId()));
 
-				datalayer.add(user, SegmentData.KEY, segmentData);
+				cachelayer.add(CacheKey.key(user, SegmentData.KEY), segmentData, SegmentData.class, 10, TimeUnit.MINUTES);
 			});
 		});
+		// TODO: remove all not matching segments from cache
 	}
-
+	
 	public void forceSegmenteGeneration(final Segment segment) {
 		handleSegments(Sets.newHashSet(segment));
 	}

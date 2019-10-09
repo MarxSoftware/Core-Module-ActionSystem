@@ -29,12 +29,15 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
@@ -60,7 +63,7 @@ public class NotTest extends AbstractTest{
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 	private String notvisited_id;
 
 	@BeforeClass
@@ -100,9 +103,9 @@ public class NotTest extends AbstractTest{
 		
 		System.out.println("service: " + service.all());
 		
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -118,15 +121,7 @@ public class NotTest extends AbstractTest{
 	public void test_not_pageview() throws Exception {
 
 		System.out.println("testing not pageview");
-		
-		/* 
-		segment().site('asite_not')
-		.and(
-			not(
-				rule(PAGEVIEW).page('apage_not')
-			)
-		)
-	*/
+
 		
 		JSONObject event = new JSONObject();
 		event.put("_timestamp", System.currentTimeMillis());
@@ -140,9 +135,9 @@ public class NotTest extends AbstractTest{
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(datalayer, "notKlaus", 1);
+		await(cachelayer, "notKlaus", 1);
 
-		List<SegmentData> data = datalayer.list("notKlaus", SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> data = cachelayer.list(CacheKey.key("notKlaus", SegmentData.KEY), SegmentData.class);
 		assertThat(data).isNotEmpty();
 
 		Set<String> segments = getRawSegments(data);
@@ -156,7 +151,7 @@ public class NotTest extends AbstractTest{
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
-				!datalayer.exists("notKlaus", SegmentData.KEY)
+				!cachelayer.exists(CacheKey.key("notKlaus", SegmentData.KEY))
 		);
 	}
 	
@@ -181,6 +176,6 @@ public class NotTest extends AbstractTest{
 
 		Thread.sleep(2000);
 		
-		assertThat(datalayer.exists("notKlaus", SegmentData.KEY)).isFalse();
+		assertThat(cachelayer.exists(CacheKey.key("notKlaus", SegmentData.KEY))).isFalse();
 	}
 }

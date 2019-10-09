@@ -30,13 +30,16 @@ import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
@@ -60,7 +63,7 @@ public class ReferrerTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 	private String search_id;
 	private String notsearch_id;
 
@@ -97,9 +100,9 @@ public class ReferrerTest extends AbstractTest {
 		
 		System.out.println("service: " + service.all());
 		
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -137,9 +140,9 @@ public class ReferrerTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(datalayer, USER_ID, 1);
+		await(cachelayer, USER_ID, 1);
 		
-		List<SegmentData> data = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		
 		Set<String> segments = getRawSegments(data);
 
@@ -156,10 +159,10 @@ public class ReferrerTest extends AbstractTest {
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		await(datalayer, USER_ID, 1);
+		await(cachelayer, USER_ID, 1);
 
 		
-		data = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		segments = getRawSegments(data);
 
 		assertThat(segments).isNotNull();

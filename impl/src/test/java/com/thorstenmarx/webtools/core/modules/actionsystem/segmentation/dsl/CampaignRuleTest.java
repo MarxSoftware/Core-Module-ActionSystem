@@ -27,11 +27,14 @@ import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
@@ -55,7 +58,7 @@ public class CampaignRuleTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 	
 	private String twitter_id;
 	private String facebook_id;
@@ -79,9 +82,9 @@ public class CampaignRuleTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 		
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -113,15 +116,15 @@ public class CampaignRuleTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(TestHelper.event_data(USER_ID), new JSONObject()));
 		
-		await(datalayer, USER_ID, 1);
+		await(cachelayer, USER_ID, 1);
 		
-		List<SegmentData> data = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		assertThat(data).isNotEmpty();
 
-		Set<String> segments = data.get(0).getSegments();
+		SegmentData.Segment segment = data.get(0).getSegment();
 
-		assertThat(segments).isNotNull();
-		assertThat(segments).containsExactly(twitter_id);
+		assertThat(segment).isNotNull();
+		assertThat(segment.id).isEqualTo(twitter_id);
 		
 		JSONObject event = TestHelper.event_data(USER_ID);
 		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
@@ -129,15 +132,13 @@ public class CampaignRuleTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		datalayer.remove(USER_ID, SegmentData.KEY);
-
-		await(datalayer, USER_ID, 2);
+		await(cachelayer, USER_ID, 2);
 				
-		data = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		assertThat(data).isNotEmpty();
 		
 		
-		segments = getRawSegments(data);
+		Set<String> segments = getRawSegments(data);
 		assertThat(segments).isNotNull();
 		assertThat(segments).containsExactlyInAnyOrder(twitter_id, facebook_id);
 	}

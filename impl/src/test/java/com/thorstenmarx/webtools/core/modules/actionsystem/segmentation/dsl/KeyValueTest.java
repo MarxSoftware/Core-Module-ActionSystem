@@ -28,11 +28,14 @@ import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
+import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.Arrays;
@@ -57,7 +60,7 @@ public class KeyValueTest extends AbstractTest {
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
-	MockDataLayer datalayer;
+	CacheLayer cachelayer;
 
 	String segment_device;
 	String segment_product;
@@ -87,9 +90,9 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_product_multi_AND: " + segment_product_multi_AND);
 		System.out.println("segment_device: " + segment_device);
 
-		datalayer = new MockDataLayer();
+		cachelayer = new MockCacheLayer();
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, datalayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
 		actionSystem.start();
 	}
 
@@ -128,14 +131,14 @@ public class KeyValueTest extends AbstractTest {
 		event.put("c_products", "prod1");
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		assertThat(datalayer.exists("peter2", SegmentData.KEY)).isFalse();
+		assertThat(cachelayer.exists(CacheKey.key("peter2", SegmentData.KEY))).isFalse();
 
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(datalayer, "peter2", 1);
+		await(cachelayer, "peter2", 1);
 
-		List<SegmentData> metaData = datalayer.list("peter2", SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> metaData = cachelayer.list(CacheKey.key("peter2", SegmentData.KEY), SegmentData.class);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product);
@@ -161,15 +164,15 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		await(datalayer, "linuxuser", 1);
-		await(datalayer, "windowsuser", 1);
+		await(cachelayer, "linuxuser", 1);
+		await(cachelayer, "windowsuser", 1);
 
-		List<SegmentData> metaData = datalayer.list("linuxuser", SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> metaData = cachelayer.list(CacheKey.key("linuxuser", SegmentData.KEY), SegmentData.class);
+		assertThat(metaData).isNotEmpty();
 		Set<String> segments = getRawSegments(metaData);
-		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_device);
 		
-		metaData = datalayer.list("windowsuser", SegmentData.KEY, SegmentData.class).get();
+		metaData = cachelayer.list(CacheKey.key("windowsuser", SegmentData.KEY), SegmentData.class);
 		segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_device);
@@ -194,14 +197,14 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(datalayer.exists(USER_ID, SegmentData.KEY)).isFalse();
+		assertThat(cachelayer.exists(CacheKey.key(USER_ID, SegmentData.KEY))).isFalse();
 
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 
-		await(datalayer, USER_ID, 2);
+		await(cachelayer, USER_ID, 2);
 
-		List<SegmentData> metaData = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> metaData = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);
@@ -224,15 +227,15 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(datalayer.exists(USER_ID, SegmentData.KEY)).isFalse();
+		assertThat(cachelayer.exists(CacheKey.key(USER_ID, SegmentData.KEY))).isFalse();
 
 		JSONObject event2 = (JSONObject) event.clone();
 		event2.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event2, new JSONObject()));
 
-		await(datalayer, USER_ID, 2);
+		await(cachelayer, USER_ID, 2);
 
-		List<SegmentData> metaData = datalayer.list(USER_ID, SegmentData.KEY, SegmentData.class).get();
+		List<SegmentData> metaData = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);

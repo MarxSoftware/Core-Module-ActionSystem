@@ -5,6 +5,7 @@ import com.thorstenmarx.modules.api.annotation.Extension;
 import com.thorstenmarx.webtools.api.actions.ActionSystem;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
+import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.api.execution.Executor;
@@ -31,7 +32,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Inject
 	private MBassador mBassador;
 	@Inject
-	private DataLayer datalayer;
+	private CacheLayer cachelayer;
 	@Inject
 	private Executor executor;
 	
@@ -45,7 +46,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Override
 	public ActionSystem getActionSystem() {
 		if (CoreModuleActionSystemModuleLifeCycle.actionSystem == null) {
-			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, datalayer, executor);
+			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, cachelayer, executor);
 			actionSystem.start();
 		}
 		return CoreModuleActionSystemModuleLifeCycle.actionSystem;
