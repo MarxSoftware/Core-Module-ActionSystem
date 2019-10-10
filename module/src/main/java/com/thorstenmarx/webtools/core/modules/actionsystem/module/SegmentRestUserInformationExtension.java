@@ -22,11 +22,9 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 	
 	@Override
 	public JSONObject getUserInformation(String userid) {
-		final String cache_key = CacheKey.key(userid, SegmentData.KEY);
-		
 		JSONObject segments = new JSONObject();
 		
-		List<SegmentData> segmentList = cachelayer.list(cache_key, SegmentData.class);
+		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid);
 		JSONArray segmentArray = new JSONArray();
 		segmentList.forEach(segmentArray::add);
 		
@@ -42,8 +40,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 
 	@Override
 	public boolean hasUserInformation(final String userid) {
-		final String cache_key = CacheKey.key(userid, SegmentData.KEY);
-		return cachelayer.exists(cache_key);
+		return !CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid).isEmpty();
 	}
 
 	@Override

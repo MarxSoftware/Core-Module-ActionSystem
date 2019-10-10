@@ -30,6 +30,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -52,6 +53,7 @@ public class ActionTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	private MBassador mbassador;
@@ -70,10 +72,11 @@ public class ActionTest extends AbstractTest {
 		service = new EntitiesSegmentService(entities());
 
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 
 		System.out.println("service: " + service.all());
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 //		actionSystem.start();
 
 		String sb = "eventAction('testEvent').site('testSite').window(years(1)).and(rule(EVENT).event('order').count(2))";

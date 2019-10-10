@@ -33,6 +33,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 
@@ -64,6 +65,8 @@ public class NotTest extends AbstractTest{
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
+	
 	private String notvisited_id;
 
 	@BeforeClass
@@ -104,8 +107,9 @@ public class NotTest extends AbstractTest{
 		System.out.println("service: " + service.all());
 		
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -135,9 +139,9 @@ public class NotTest extends AbstractTest{
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(cachelayer, "notKlaus", 1);
+		await(userSegmenteStore, "notKlaus", 1);
 
-		List<SegmentData> data = cachelayer.list(CacheKey.key("notKlaus", SegmentData.KEY), SegmentData.class);
+		List<SegmentData> data = userSegmenteStore.get("notKlaus");
 		assertThat(data).isNotEmpty();
 
 		Set<String> segments = getRawSegments(data);
@@ -151,7 +155,7 @@ public class NotTest extends AbstractTest{
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 		Awaitility.await().atMost(1000, TimeUnit.SECONDS).until(() ->
-				!cachelayer.exists(CacheKey.key("notKlaus", SegmentData.KEY))
+				userSegmenteStore.get("notKlaus").isEmpty()
 		);
 	}
 	
@@ -176,6 +180,6 @@ public class NotTest extends AbstractTest{
 
 		Thread.sleep(2000);
 		
-		assertThat(cachelayer.exists(CacheKey.key("notKlaus", SegmentData.KEY))).isFalse();
+		assertThat(userSegmenteStore.get("notKlaus")).isEmpty();
 	}
 }

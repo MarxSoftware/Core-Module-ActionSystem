@@ -32,6 +32,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -61,6 +62,7 @@ public class KeyValueTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
 
 	String segment_device;
 	String segment_product;
@@ -91,8 +93,9 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_device: " + segment_device);
 
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -131,14 +134,14 @@ public class KeyValueTest extends AbstractTest {
 		event.put("c_products", "prod1");
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		assertThat(cachelayer.exists(CacheKey.key("peter2", SegmentData.KEY))).isFalse();
+		assertThat(userSegmenteStore.get("peter2")).isEmpty();
 
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(cachelayer, "peter2", 1);
+		await(userSegmenteStore, "peter2", 1);
 
-		List<SegmentData> metaData = cachelayer.list(CacheKey.key("peter2", SegmentData.KEY), SegmentData.class);
+		List<SegmentData> metaData = userSegmenteStore.get("peter2");
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product);
@@ -164,15 +167,15 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		await(cachelayer, "linuxuser", 1);
-		await(cachelayer, "windowsuser", 1);
+		await(userSegmenteStore, "linuxuser", 1);
+		await(userSegmenteStore, "windowsuser", 1);
 
-		List<SegmentData> metaData = cachelayer.list(CacheKey.key("linuxuser", SegmentData.KEY), SegmentData.class);
+		List<SegmentData> metaData = userSegmenteStore.get("linuxuser");
 		assertThat(metaData).isNotEmpty();
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).containsExactly(segment_device);
 		
-		metaData = cachelayer.list(CacheKey.key("windowsuser", SegmentData.KEY), SegmentData.class);
+		metaData = userSegmenteStore.get("windowsuser");
 		segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_device);
@@ -197,14 +200,14 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(cachelayer.exists(CacheKey.key(USER_ID, SegmentData.KEY))).isFalse();
+		assertThat(userSegmenteStore.get(USER_ID)).isEmpty();
 
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 
-		await(cachelayer, USER_ID, 2);
+		await(userSegmenteStore, USER_ID, 2);
 
-		List<SegmentData> metaData = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		List<SegmentData> metaData = userSegmenteStore.get(USER_ID);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);
@@ -227,15 +230,15 @@ public class KeyValueTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(cachelayer.exists(CacheKey.key(USER_ID, SegmentData.KEY))).isFalse();
+		assertThat(userSegmenteStore.get(USER_ID)).isEmpty();
 
 		JSONObject event2 = (JSONObject) event.clone();
 		event2.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event2, new JSONObject()));
 
-		await(cachelayer, USER_ID, 2);
+		await(userSegmenteStore, USER_ID, 2);
 
-		List<SegmentData> metaData = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		List<SegmentData> metaData = userSegmenteStore.get(USER_ID);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);

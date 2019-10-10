@@ -23,20 +23,14 @@ package com.thorstenmarx.webtools.core.modules.actionsystem;
  */
 import com.google.common.collect.Sets;
 import com.thorstenmarx.modules.api.ModuleManager;
-import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
-import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,18 +52,18 @@ public class SegmentationWorkerThread extends Thread {
 	private final AnalyticsDB db;
 	private final ActionSystemImpl actionSystem;
 	private final ModuleManager moduleManager;
-	private final CacheLayer cachelayer;
+	private final UserSegmentStore userSegmenteStore;
 	private final GraalDSL dslRunner;
 
 	private boolean shutdown = false;
 
 	private SegmentCalculator segmentCalculator;
 
-	public SegmentationWorkerThread(int index, final AnalyticsDB db, final ActionSystemImpl actionSystem, final ModuleManager moduleManager, final CacheLayer cachelayer) {
+	public SegmentationWorkerThread(int index, final AnalyticsDB db, final ActionSystemImpl actionSystem, final ModuleManager moduleManager, final UserSegmentStore userSegmenteStore) {
 		this.db = db;
 		this.actionSystem = actionSystem;
 		this.moduleManager = moduleManager;
-		this.cachelayer = cachelayer;
+		this.userSegmenteStore = userSegmenteStore;
 		this.dslRunner = new GraalDSL(moduleManager, null);
 		setDaemon(true);
 		this.workerName = CONSUMER_NAME + "_" + index;
@@ -97,46 +91,25 @@ public class SegmentationWorkerThread extends Thread {
 
 		final Set<AdvancedSegment> advancedSegments = segments.stream().filter(AdvancedSegment.class::isInstance).map(AdvancedSegment.class::cast).collect(Collectors.toSet());
 
-		final Map<String, Segment> segmentMap = advancedSegments.stream().filter((s) -> s.isActive()).collect(Collectors.toMap(Segment::getId,
-				Function.identity()));
-
-		final Map<String, Set<String>> userSegments = new ConcurrentHashMap<>();
-		advancedSegments.stream().filter(s -> s.isActive()).forEach((segment) -> handleSegment(segment, userSegments));
-
-		
-		userSegments.forEach((user, segmentSet) -> {
-			// TODO: das hier genügt nicht, in dem Fall werden ja Benutzer ohne neue Segmente nicht aus dem Cache entfernt
-			cachelayer.invalidate(CacheKey.key(user, SegmentData.KEY));
-			segmentSet.forEach((s) -> {
-				final SegmentData segmentData = new SegmentData();
-				AdvancedSegment seg = (AdvancedSegment) segmentMap.get(s);
-				segmentData.setSegment(new SegmentData.Segment(seg.getName(), seg.getExternalId(), seg.getId()));
-				
-				System.out.println(seg.getName());
-				
-				cachelayer.add(CacheKey.key(user, SegmentData.KEY), segmentData, SegmentData.class, 10, TimeUnit.MINUTES);
-			});
-		});
-		// TODO: remove all not matching segments from cache
+		advancedSegments.stream().filter(s -> s.isActive()).forEach(this::handleSegment);
 	}
 	
 	public void forceSegmenteGeneration(final Segment segment) {
 		handleSegments(Sets.newHashSet(segment));
 	}
 
-	private void handleSegment(final AdvancedSegment segment, final Map<String, Set<String>> userSegments) {
-
+	private void handleSegment(final AdvancedSegment segment) {
+		
+		System.out.println("handle segment: " + segment);
+		
 		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
-		final String segID = segment.getId();
+		
+		userSegmenteStore.removeBySegment(segment.getId());
 		result.users.forEach((user) -> {
-			Set<String> userSegmentSet;
-			if (userSegments.containsKey(user)) {
-				userSegmentSet = userSegments.get(user);
-			} else {
-				userSegmentSet = new HashSet<>();
-				userSegments.put(user, userSegmentSet);
-			}
-			userSegmentSet.add(segID);
+			System.out.println("user: " + user);
+			final SegmentData segmentData = new SegmentData();
+			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+			this.userSegmenteStore.add(user, segmentData);
 		});
 	}
 }

@@ -84,16 +84,16 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 	private final Map<String, EventAction> actions = new ConcurrentHashMap<>();
 	private final MBassador mBassador;
 	private ActionWorkerThread actionWorker;
-	private final CacheLayer cachelayer;
+	private final UserSegmentStore userSegmentStore;
 
 	private final GraalDSL dslRunner;
 	
-	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final CacheLayer cachelayer, final Executor executor) {
+	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final UserSegmentStore userSegmentStore, final Executor executor) {
 		this.moduleManager = moduleManager;
 		this.mBassador = mBassador;
 		this.analyticsDb = analyticsDb;
 		this.segmentService = segmentService;
-		this.cachelayer = cachelayer;
+		this.userSegmentStore = userSegmentStore;
 		segments.addAll(segmentService.all());
 		segmentService.addEventListener(this);
 		this.dslRunner = new GraalDSL(moduleManager, mBassador);
@@ -146,7 +146,7 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 
 	@Override
 	public void start() {
-		segmentationWorker = new SegmentationWorkerThread(1, analyticsDb, this, moduleManager, this.cachelayer);
+		segmentationWorker = new SegmentationWorkerThread(1, analyticsDb, this, moduleManager, this.userSegmentStore);
 		segmentationWorker.start();
 
 //		actionWorker = new ActionWorkerThread(0, analyticsDb, this, moduleManager);

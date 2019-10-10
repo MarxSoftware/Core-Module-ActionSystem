@@ -32,6 +32,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -61,6 +62,8 @@ public class CategoryTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
+	
 	private String search_id;
 	private String notsearch_id;
 
@@ -100,8 +103,9 @@ public class CategoryTest extends AbstractTest {
 		System.out.println("service: " + service.all());
 		
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -141,7 +145,7 @@ public class CategoryTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 		Thread.sleep(2000l);
-		List<SegmentData> list = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		List<SegmentData> list = userSegmenteStore.get(USER_ID);
 		assertThat(list).isEmpty();
 		
 		event = new JSONObject();
@@ -154,10 +158,10 @@ public class CategoryTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		await(cachelayer, USER_ID, 1);
+		await(userSegmenteStore, USER_ID, 1);
 
 		
-		list = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		list = userSegmenteStore.get(USER_ID);
 		assertThat(list).isNotEmpty();
 		Set<String> segments = getRawSegments(list);
 		assertThat(segments).isNotNull();

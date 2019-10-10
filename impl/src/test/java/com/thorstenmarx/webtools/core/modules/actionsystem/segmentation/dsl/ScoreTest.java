@@ -33,6 +33,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -62,6 +63,8 @@ public class ScoreTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
+	
 	private String demoSeg_id;
 
 	@BeforeClass
@@ -87,8 +90,9 @@ public class ScoreTest extends AbstractTest {
 		System.out.println("service: " + service.all());
 
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -133,9 +137,9 @@ public class ScoreTest extends AbstractTest {
 
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(cachelayer, "peter", 1);
+		await(userSegmenteStore, "peter", 1);
 
-		List<SegmentData> data = cachelayer.list(CacheKey.key("peter", SegmentData.KEY), SegmentData.class);
+		List<SegmentData> data = userSegmenteStore.get("peter");
 		Set<String> segments = getRawSegments(data);
 		assertThat(segments).contains(demoSeg_id);
 

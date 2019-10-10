@@ -31,6 +31,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -59,6 +60,7 @@ public class CampaignRuleTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
 	
 	private String twitter_id;
 	private String facebook_id;
@@ -83,8 +85,9 @@ public class CampaignRuleTest extends AbstractTest {
 		System.out.println("service: " + service.all());
 		
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -116,9 +119,9 @@ public class CampaignRuleTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(TestHelper.event_data(USER_ID), new JSONObject()));
 		
-		await(cachelayer, USER_ID, 1);
+		await(userSegmenteStore, USER_ID, 1);
 		
-		List<SegmentData> data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		List<SegmentData> data = userSegmenteStore.get(USER_ID);
 		assertThat(data).isNotEmpty();
 
 		SegmentData.Segment segment = data.get(0).getSegment();
@@ -132,9 +135,9 @@ public class CampaignRuleTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		await(cachelayer, USER_ID, 2);
+		await(userSegmenteStore, USER_ID, 2);
 				
-		data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		data = userSegmenteStore.get(USER_ID);
 		assertThat(data).isNotEmpty();
 		
 		

@@ -11,6 +11,7 @@ import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.api.execution.Executor;
 import com.thorstenmarx.webtools.api.extensions.core.CoreActionSystemExtension;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import static com.thorstenmarx.webtools.core.modules.actionsystem.module.CoreModuleActionSystemModuleLifeCycle.actionSystem;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import javax.inject.Inject;
@@ -36,7 +37,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Inject
 	private Executor executor;
 	
-	
+	protected static UserSegmentStore userSegmentStore;
 		
 	@Override
 	public String getName() {
@@ -46,7 +47,8 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Override
 	public ActionSystem getActionSystem() {
 		if (CoreModuleActionSystemModuleLifeCycle.actionSystem == null) {
-			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, cachelayer, executor);
+			userSegmentStore = new UserSegmentStore(cachelayer);
+			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, userSegmentStore, executor);
 			actionSystem.start();
 		}
 		return CoreModuleActionSystemModuleLifeCycle.actionSystem;

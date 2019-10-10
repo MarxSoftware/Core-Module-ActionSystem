@@ -34,6 +34,7 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
@@ -64,6 +65,8 @@ public class ReferrerTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
+	UserSegmentStore userSegmenteStore;
+	
 	private String search_id;
 	private String notsearch_id;
 
@@ -101,8 +104,9 @@ public class ReferrerTest extends AbstractTest {
 		System.out.println("service: " + service.all());
 		
 		cachelayer = new MockCacheLayer();
+		userSegmenteStore = new UserSegmentStore(cachelayer);
 		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, cachelayer, executor);
+		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();
 	}
 
@@ -140,9 +144,9 @@ public class ReferrerTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(cachelayer, USER_ID, 1);
+		await(userSegmenteStore, USER_ID, 1);
 		
-		List<SegmentData> data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		List<SegmentData> data = userSegmenteStore.get(USER_ID);
 		
 		Set<String> segments = getRawSegments(data);
 
@@ -159,10 +163,10 @@ public class ReferrerTest extends AbstractTest {
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		await(cachelayer, USER_ID, 1);
+		await(userSegmenteStore, USER_ID, 1);
 
 		
-		data = cachelayer.list(CacheKey.key(USER_ID, SegmentData.KEY), SegmentData.class);
+		data = userSegmenteStore.get(USER_ID);
 		segments = getRawSegments(data);
 
 		assertThat(segments).isNotNull();
