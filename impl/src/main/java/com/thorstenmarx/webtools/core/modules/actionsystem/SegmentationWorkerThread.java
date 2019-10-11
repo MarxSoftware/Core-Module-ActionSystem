@@ -93,21 +93,25 @@ public class SegmentationWorkerThread extends Thread {
 
 		advancedSegments.stream().filter(s -> s.isActive()).forEach(this::handleSegment);
 	}
-	
+
 	public void forceSegmenteGeneration(final Segment segment) {
 		handleSegments(Sets.newHashSet(segment));
 	}
 
 	private void handleSegment(final AdvancedSegment segment) {
-		
-		
+
 		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
-		
-		userSegmenteStore.removeBySegment(segment.getId());
-		result.users.forEach((user) -> {
-			final SegmentData segmentData = new SegmentData();
-			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
-			this.userSegmenteStore.add(user, segmentData);
-		});
+
+		userSegmenteStore.lock();
+		try {
+			userSegmenteStore.removeBySegment(segment.getId());
+			result.users.forEach((user) -> {
+				final SegmentData segmentData = new SegmentData();
+				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+				this.userSegmenteStore.add(user, segmentData);
+			});
+		} finally {
+			userSegmenteStore.unlock();
+		}
 	}
 }

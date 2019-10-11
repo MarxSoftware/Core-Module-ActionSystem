@@ -128,7 +128,7 @@ public class ReferrerTest extends AbstractTest {
 	 *
 	 * @throws java.lang.Exception
 	 */
-	@Test(invocationCount = 10, successPercentage = 99)
+	@Test()
 	public void test_referrer_rule() throws Exception {
 
 		System.out.println("testing referrer rule");
@@ -173,7 +173,7 @@ public class ReferrerTest extends AbstractTest {
 		assertThat(segments).containsExactly(search_id);
 	}
 	
-	@Test(invocationCount = 100, successPercentage = 99)
+	@Test()
 	public void simpleTest (){
 		DSLSegment not_search = new DSLSegment();
 		not_search.not(new ReferrerRule().medium("SEARCH"));

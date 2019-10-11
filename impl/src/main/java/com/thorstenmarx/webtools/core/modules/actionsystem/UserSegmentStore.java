@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -28,11 +29,21 @@ public class UserSegmentStore {
 	private final KeyLookup segmentLookup;
 	private final KeyLookup userLookup;
 
+	private Lock lock = new ReentrantLock();
+
 	public UserSegmentStore(final CacheLayer cachelayer) {
 		this.cachelayer = cachelayer;
 
 		segmentLookup = new KeyLookup();
 		userLookup = new KeyLookup();
+	}
+
+	public void lock() {
+		lock.lock();
+	}
+
+	public void unlock() {
+		lock.unlock();
 	}
 
 	public void add(final String userid, final SegmentData segmentData) {
@@ -44,17 +55,24 @@ public class UserSegmentStore {
 	}
 
 	public List<SegmentData> get(final String userid) {
-		List<SegmentData> result = new ArrayList<>();
-		userLookup.getUUIDs(userid).forEach((identifier) -> {
-			var segmentData = cachelayer.get(identifier, SegmentData.class);
-			if (segmentData.isPresent()) {
-				result.add(segmentData.get());
-			} else {
-				clearLookups(identifier);
-			}
-		});
+		lock.lock();
 
-		return result;
+		try {
+			List<SegmentData> result = new ArrayList<>();
+			userLookup.getUUIDs(userid).forEach((identifier) -> {
+				var segmentData = cachelayer.get(identifier, SegmentData.class);
+				if (segmentData.isPresent()) {
+					result.add(segmentData.get());
+				} else {
+					clearLookups(identifier);
+				}
+			});
+			return result;
+		} finally {
+			lock.unlock();
+		}
+
+		
 	}
 
 	private void clearLookups(final String identifier) {
@@ -80,7 +98,7 @@ public class UserSegmentStore {
 		segmentLookup.getUUIDs(segment_id).forEach((identifier) -> {
 			final String[] splitted = CacheKey.split(identifier);
 			cachelayer.invalidate(identifier);
-			
+
 			segmentLookup.remove(segment_id, identifier);
 			userLookup.remove(splitted[0], identifier);
 		});
