@@ -100,13 +100,11 @@ public class SegmentationWorkerThread extends Thread {
 
 	private void handleSegment(final AdvancedSegment segment) {
 		
-		System.out.println("handle segment: " + segment);
 		
 		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
 		
 		userSegmenteStore.removeBySegment(segment.getId());
 		result.users.forEach((user) -> {
-			System.out.println("user: " + user);
 			final SegmentData segmentData = new SegmentData();
 			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
 			this.userSegmenteStore.add(user, segmentData);
