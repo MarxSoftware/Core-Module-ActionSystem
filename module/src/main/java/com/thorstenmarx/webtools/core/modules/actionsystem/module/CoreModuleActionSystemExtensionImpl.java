@@ -6,13 +6,12 @@ import com.thorstenmarx.webtools.api.actions.ActionSystem;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.api.execution.Executor;
 import com.thorstenmarx.webtools.api.extensions.core.CoreActionSystemExtension;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
-import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
 import static com.thorstenmarx.webtools.core.modules.actionsystem.module.CoreModuleActionSystemModuleLifeCycle.actionSystem;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import javax.inject.Inject;
 import net.engio.mbassy.bus.MBassador;
@@ -37,7 +36,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Inject
 	private Executor executor;
 	
-	protected static UserSegmentStore userSegmentStore;
+	protected static LocalUserSegmentStore userSegmentStore;
 		
 	@Override
 	public String getName() {
@@ -47,7 +46,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	@Override
 	public ActionSystem getActionSystem() {
 		if (CoreModuleActionSystemModuleLifeCycle.actionSystem == null) {
-			userSegmentStore = new UserSegmentStore(cachelayer);
+			userSegmentStore = new LocalUserSegmentStore(cachelayer);
 			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, userSegmentStore, executor);
 			actionSystem.start();
 		}

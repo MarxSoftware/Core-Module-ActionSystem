@@ -22,8 +22,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem;
  * #L%
  */
 import com.thorstenmarx.webtools.api.actions.ActionSystem;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.thorstenmarx.modules.api.ModuleManager;
@@ -36,21 +34,18 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.TrackedEvent;
-import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.api.datalayer.DataLayer;
-import com.thorstenmarx.webtools.api.datalayer.Expirable;
+import com.thorstenmarx.webtools.api.cluster.Cluster;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.execution.Executor;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.EventAction;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import javax.script.ScriptException;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.listener.Handler;
@@ -69,11 +64,6 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 
 	Set<Segment> segments = Sets.newConcurrentHashSet();
 
-	Cache<String, Set<String>> segmentCache = Caffeine.newBuilder()
-			.expireAfterWrite(5, TimeUnit.MINUTES)
-			.maximumSize(Integer.MAX_VALUE)
-			.build();
-
 	SegmentationWorkerThread segmentationWorker;
 
 	private final AnalyticsDB analyticsDb;
@@ -84,19 +74,28 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 	private final Map<String, EventAction> actions = new ConcurrentHashMap<>();
 	private final MBassador mBassador;
 	private ActionWorkerThread actionWorker;
-	private final UserSegmentStore userSegmentStore;
+	private final LocalUserSegmentStore userSegmentStore;
 
 	private final GraalDSL dslRunner;
+	private final SegmentCalculator segmentCalculator;
 	
-	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final UserSegmentStore userSegmentStore, final Executor executor) {
+	private final Cluster cluster;
+	
+	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final LocalUserSegmentStore userSegmentStore, final Executor executor) {
+		this(analyticsDb, segmentService, moduleManager, mBassador, userSegmentStore, executor, null);
+	}
+	
+	public ActionSystemImpl(final AnalyticsDB analyticsDb, final SegmentService segmentService, final ModuleManager moduleManager, final MBassador mBassador, final LocalUserSegmentStore userSegmentStore, final Executor executor, final Cluster cluster) {
 		this.moduleManager = moduleManager;
 		this.mBassador = mBassador;
 		this.analyticsDb = analyticsDb;
 		this.segmentService = segmentService;
 		this.userSegmentStore = userSegmentStore;
+		this.cluster = cluster;
 		segments.addAll(segmentService.all());
 		segmentService.addEventListener(this);
 		this.dslRunner = new GraalDSL(moduleManager, mBassador);
+		this.segmentCalculator = new SegmentCalculator(analyticsDb, dslRunner);
 	}
 
 	public void addAction(final String id, final String event, final String dsl) throws ActionException {
@@ -146,7 +145,12 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 
 	@Override
 	public void start() {
-		segmentationWorker = new SegmentationWorkerThread(1, analyticsDb, this, moduleManager, this.userSegmentStore);
+		if (cluster != null) {
+			segmentationWorker = new SegmentationWorkerThread(1, this::getSegments, this::handleSegment);
+		} else {
+			segmentationWorker = new SegmentationWorkerThread(1, this::getSegments, this::cluster_handleSegment);
+		}
+		
 		segmentationWorker.start();
 
 //		actionWorker = new ActionWorkerThread(0, analyticsDb, this, moduleManager);
@@ -210,6 +214,42 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 			return true;
 		} catch (Exception e) {
 			return false;
+		}
+	}
+	
+	public void handleSegment(final AdvancedSegment segment) {
+		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
+
+		userSegmentStore.lock();
+		try {
+			userSegmentStore.removeBySegment(segment.getId());
+			result.users.forEach((user) -> {
+				final SegmentData segmentData = new SegmentData();
+				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+				this.userSegmentStore.add(user, segmentData);
+			});
+		} finally {
+			userSegmentStore.unlock();
+		}
+	}
+	
+	public void cluster_handleSegment(final AdvancedSegment segment) {
+		
+		
+		
+		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
+
+		
+		userSegmentStore.lock();
+		try {
+			userSegmentStore.removeBySegment(segment.getId());
+			result.users.forEach((user) -> {
+				final SegmentData segmentData = new SegmentData();
+				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+				this.userSegmentStore.add(user, segmentData);
+			});
+		} finally {
+			userSegmentStore.unlock();
 		}
 	}
 }

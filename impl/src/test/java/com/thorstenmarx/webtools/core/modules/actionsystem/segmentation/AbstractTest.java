@@ -27,7 +27,7 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.entities.Entities;
-import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.test.MockEntities;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +63,7 @@ public abstract class AbstractTest {
 		return tester.getId();
 	}
 	
-	protected void await(final UserSegmentStore userSegmentStore, final String USER_ID, final int count) {
+	protected void await(final LocalUserSegmentStore userSegmentStore, final String USER_ID, final int count) {
 		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
 				!userSegmentStore.get(USER_ID).isEmpty() && userSegmentStore.get(USER_ID).size() == count
 		);

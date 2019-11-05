@@ -22,15 +22,11 @@ package com.thorstenmarx.webtools.core.modules.actionsystem;
  * #L%
  */
 import com.google.common.collect.Sets;
-import com.thorstenmarx.modules.api.ModuleManager;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
-import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,26 +45,21 @@ public class SegmentationWorkerThread extends Thread {
 
 	private final String workerName;
 
-	private final AnalyticsDB db;
-	private final ActionSystemImpl actionSystem;
-	private final ModuleManager moduleManager;
-	private final UserSegmentStore userSegmenteStore;
-	private final GraalDSL dslRunner;
 
-	private boolean shutdown = false;
+	
+private boolean shutdown = false;
 
-	private SegmentCalculator segmentCalculator;
-
-	public SegmentationWorkerThread(int index, final AnalyticsDB db, final ActionSystemImpl actionSystem, final ModuleManager moduleManager, final UserSegmentStore userSegmenteStore) {
-		this.db = db;
-		this.actionSystem = actionSystem;
-		this.moduleManager = moduleManager;
-		this.userSegmenteStore = userSegmenteStore;
-		this.dslRunner = new GraalDSL(moduleManager, null);
+//	private SegmentCalculator segmentCalculator;
+	
+	private final Consumer<AdvancedSegment> segmentConsumer;
+	private final Supplier<Set<Segment>> segmentSupplier;
+	
+	public SegmentationWorkerThread(int index, final Supplier<Set<Segment>> segmentSupplier, final Consumer<AdvancedSegment> segmentConsumer) {
+		this.segmentSupplier = segmentSupplier;
+		this.segmentConsumer = segmentConsumer;
+//		this.dslRunner = new GraalDSL(moduleManager, null);
 		setDaemon(true);
 		this.workerName = CONSUMER_NAME + "_" + index;
-
-		this.segmentCalculator = new SegmentCalculator(db, dslRunner);
 	}
 
 	public void shutdown() {
@@ -79,7 +70,7 @@ public class SegmentationWorkerThread extends Thread {
 	public void run() {
 		while (!shutdown) {
 			try {
-				final Set<Segment> segments = actionSystem.getSegments();
+				final Set<Segment> segments = segmentSupplier.get();
 				handleSegments(segments);
 			} catch (Exception e) {
 				log.error("", e);
@@ -91,27 +82,10 @@ public class SegmentationWorkerThread extends Thread {
 
 		final Set<AdvancedSegment> advancedSegments = segments.stream().filter(AdvancedSegment.class::isInstance).map(AdvancedSegment.class::cast).collect(Collectors.toSet());
 
-		advancedSegments.stream().filter(s -> s.isActive()).forEach(this::handleSegment);
+		advancedSegments.stream().filter(s -> s.isActive()).forEach(segmentConsumer);
 	}
 
 	public void forceSegmenteGeneration(final Segment segment) {
 		handleSegments(Sets.newHashSet(segment));
-	}
-
-	private void handleSegment(final AdvancedSegment segment) {
-
-		SegmentCalculator.Result result = segmentCalculator.calculate(segment);
-
-		userSegmenteStore.lock();
-		try {
-			userSegmenteStore.removeBySegment(segment.getId());
-			result.users.forEach((user) -> {
-				final SegmentData segmentData = new SegmentData();
-				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
-				this.userSegmenteStore.add(user, segmentData);
-			});
-		} finally {
-			userSegmenteStore.unlock();
-		}
 	}
 }

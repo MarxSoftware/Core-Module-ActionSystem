@@ -5,14 +5,11 @@
  */
 package com.thorstenmarx.webtools.core.modules.actionsystem;
 
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
-import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
 import org.assertj.core.api.Assertions;
-import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -20,13 +17,13 @@ import org.testng.annotations.Test;
  *
  * @author marx
  */
-public class UserSegmentStoreNGTest {
+public class LocalUserSegmentStoreNGTest {
 
-	UserSegmentStore userSegmentStore;
+	LocalUserSegmentStore userSegmentStore;
 
 	@BeforeMethod
 	public void setUpClass() throws Exception {
-		userSegmentStore = new UserSegmentStore(new MockCacheLayer());
+		userSegmentStore = new LocalUserSegmentStore(new MockCacheLayer());
 		
 		final var segmentData1 = new SegmentData();
 		segmentData1.setSegment(new SegmentData.Segment("test1", 1, "1"));

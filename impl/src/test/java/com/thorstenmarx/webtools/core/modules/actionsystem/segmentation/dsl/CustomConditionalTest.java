@@ -30,14 +30,12 @@ import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
-import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
-import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
@@ -46,7 +44,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import net.engio.mbassy.bus.MBassador;
@@ -62,7 +59,7 @@ public class CustomConditionalTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
-	UserSegmentStore userSegmenteStore;
+	LocalUserSegmentStore userSegmenteStore;
 	
 	private String conditional_ID;
 	private String facebook_id;
@@ -95,7 +92,7 @@ public class CustomConditionalTest extends AbstractTest {
 		System.out.println("service: " + service.all());
 		
 		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new UserSegmentStore(cachelayer);
+		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
 		
 		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();

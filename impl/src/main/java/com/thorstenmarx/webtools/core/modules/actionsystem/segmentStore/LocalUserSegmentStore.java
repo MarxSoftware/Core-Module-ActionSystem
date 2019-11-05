@@ -1,10 +1,12 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
+import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author marx
  */
-public class UserSegmentStore {
+public class LocalUserSegmentStore implements UserSegmentStore {
 
 	private final CacheLayer cachelayer;
 
@@ -31,21 +33,24 @@ public class UserSegmentStore {
 
 	private Lock lock = new ReentrantLock();
 
-	public UserSegmentStore(final CacheLayer cachelayer) {
+	public LocalUserSegmentStore(final CacheLayer cachelayer) {
 		this.cachelayer = cachelayer;
 
 		segmentLookup = new KeyLookup();
 		userLookup = new KeyLookup();
 	}
 
+	@Override
 	public void lock() {
 		lock.lock();
 	}
 
+	@Override
 	public void unlock() {
 		lock.unlock();
 	}
 
+	@Override
 	public void add(final String userid, final SegmentData segmentData) {
 		final String identifier = CacheKey.key(userid, SegmentData.KEY, segmentData.getSegment());
 
@@ -54,6 +59,7 @@ public class UserSegmentStore {
 		cachelayer.add(identifier, segmentData, 5, TimeUnit.MINUTES);
 	}
 
+	@Override
 	public List<SegmentData> get(final String userid) {
 		lock.lock();
 
@@ -81,6 +87,7 @@ public class UserSegmentStore {
 		segmentLookup.remove(splitted[2], identifier);
 	}
 
+	@Override
 	public void removeByUser(final String user_id) {
 		final Collection<String> uuiDs = userLookup.getUUIDs(user_id);
 
@@ -94,6 +101,7 @@ public class UserSegmentStore {
 		});
 	}
 
+	@Override
 	public void removeBySegment(final String segment_id) {
 		segmentLookup.getUUIDs(segment_id).forEach((identifier) -> {
 			final String[] splitted = CacheKey.split(identifier);

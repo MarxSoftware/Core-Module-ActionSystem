@@ -30,14 +30,12 @@ import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
-import com.thorstenmarx.webtools.core.modules.actionsystem.CacheKey;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
-import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +60,7 @@ public class KeyValueTest extends AbstractTest {
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
-	UserSegmentStore userSegmenteStore;
+	LocalUserSegmentStore userSegmenteStore;
 
 	String segment_device;
 	String segment_product;
@@ -93,7 +91,7 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_device: " + segment_device);
 
 		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new UserSegmentStore(cachelayer);
+		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
 
 		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 		actionSystem.start();

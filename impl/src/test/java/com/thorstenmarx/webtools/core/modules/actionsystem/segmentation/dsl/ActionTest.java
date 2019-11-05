@@ -27,15 +27,13 @@ import com.thorstenmarx.webtools.api.actions.ActionException;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.api.datalayer.DataLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentStore;
+import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
-import com.thorstenmarx.webtools.test.MockDataLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -53,7 +51,7 @@ public class ActionTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	CacheLayer cachelayer;
-	UserSegmentStore userSegmenteStore;
+	LocalUserSegmentStore userSegmenteStore;
 	ActionSystemImpl actionSystem;
 	SegmentService service;
 	private MBassador mbassador;
@@ -72,7 +70,7 @@ public class ActionTest extends AbstractTest {
 		service = new EntitiesSegmentService(entities());
 
 		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new UserSegmentStore(cachelayer);
+		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
 
 		System.out.println("service: " + service.all());
 
