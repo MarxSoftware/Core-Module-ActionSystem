@@ -26,7 +26,14 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 		
 		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid);
 		JSONArray segmentArray = new JSONArray();
-		segmentList.forEach(segmentArray::add);
+		segmentList.forEach((sd) -> {
+			JSONObject segment = new JSONObject();
+			segment.put("id", sd.getSegment().id);
+			segment.put("name", sd.getSegment().name);
+			segment.put("wpid", sd.getSegment().wpid);
+			
+			segmentArray.add(segment);
+		});
 		
 		segments.put("segments", segmentArray);
 		

@@ -140,12 +140,13 @@ public class ActionSystemImpl implements SegmentService.ChangedEventListener, Ac
 	 * @return
 	 */
 	public Set<Segment> getSegments() {
-		return new HashSet<>(Clone.clone(segments));
+//		return new HashSet<>(Clone.clone(segments));
+		return new HashSet<>(Clone.clone(segmentService.all()));
 	}
 
 	@Override
 	public void start() {
-		if (cluster != null) {
+		if (cluster == null) {
 			segmentationWorker = new SegmentationWorkerThread(1, this::getSegments, this::handleSegment);
 		} else {
 			segmentationWorker = new SegmentationWorkerThread(1, this::getSegments, this::cluster_handleSegment);
