@@ -38,6 +38,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.KeyValueRul
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.PageViewRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.functions.*;
 import com.thorstenmarx.webtools.scripting.GraalScripting;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -171,76 +172,5 @@ public class GraalDSL {
 		sb.append("segment().and(or1, or1);");
 		DSLSegment seg = new GraalDSL(null, null).build(sb.toString());
 //		System.out.println(seg.toString());
-	}
-
-	private static class RuleFunc implements Function<String, Conditional> {
-
-		final ConcurrentMap<String, Supplier<Conditional>> rules;
-
-		public RuleFunc(final ConcurrentMap<String, Supplier<Conditional>> rules) {
-			this.rules = rules;
-		}
-
-		@Override
-		public Conditional apply(String name) {
-			if (rules.containsKey(name)) {
-				return rules.get(name).get();
-			}
-			return null;
-		}
-	}
-
-	private static class SegmentFunc implements Supplier<DSLSegment> {
-
-		private final DSLSegment segment;
-
-		protected SegmentFunc(final DSLSegment segment) {
-			this.segment = segment;
-		}
-
-		@Override
-		public DSLSegment get() {
-			return segment;
-		}
-	}
-
-	private static class EventActionFunc implements Function<String, EventAction> {
-
-		private EventAction eventAction;
-		private final MBassador eventBus;
-
-		protected EventActionFunc(final MBassador eventBus) {
-			this.eventBus = eventBus;
-		}
-
-		@Override
-		public EventAction apply(String event) {
-			eventAction = new EventAction(event, eventBus);
-			return eventAction;
-		}
-	}
-
-	private static class AndFunc implements VarFunction<Conditional, AND> {
-
-		@Override
-		public AND apply(Conditional... conditionals) {
-			return new AND(conditionals);
-		}
-	}
-
-	private static class OrFunc implements VarFunction<Conditional, OR> {
-
-		@Override
-		public OR apply(Conditional... conditionals) {
-			return new OR(conditionals);
-		}
-	}
-
-	private static class NotFunc implements VarFunction<Conditional, NOT> {
-
-		@Override
-		public NOT apply(Conditional... conditionals) {
-			return new NOT(conditionals);
-		}
 	}
 }
