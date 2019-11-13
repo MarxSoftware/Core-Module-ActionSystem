@@ -42,7 +42,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 
 	@Override
 	public String getName() {
-		return "actionsSystem";
+		return "actionSystem";
 	}
 
 	@Override
