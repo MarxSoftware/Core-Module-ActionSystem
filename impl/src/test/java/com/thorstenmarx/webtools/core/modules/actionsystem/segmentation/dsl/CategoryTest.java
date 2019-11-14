@@ -61,8 +61,9 @@ public class CategoryTest extends AbstractTest {
 	CacheLayer cachelayer;
 	LocalUserSegmentStore userSegmenteStore;
 	
-	private String search_id;
+	private String cat_1;
 	private String notsearch_id;
+	private String cat_2;
 
 	@BeforeClass
 	public void setUpClass() {
@@ -86,16 +87,17 @@ public class CategoryTest extends AbstractTest {
 		String sb = "segment().and(rule(CATEGORY).path('/CAT1/CAT2').field('c_categories').count(2))";
 		tester.setDsl(sb);
 		service.add(tester);
-		search_id = tester.getId();
+		cat_1 = tester.getId();
 		
-//		tester = new AdvancedSegment();
-//		tester.setName("Not Search");
-//		tester.setActive(true);
-//		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-//		sb = "segment().not(rule(REFERRER).medium('SEARCH'))";
-//		tester.setDsl(sb);
-//		service.add(tester);
-//		notsearch_id = tester.getId();
+		tester = new AdvancedSegment();
+		tester.setName("CAT1");
+		tester.setActive(true);
+		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
+		sb = "segment().and(rule(CATEGORY).path('/CAT1').field('c_categories').count(2))";
+		tester.setDsl(sb);
+		service.add(tester);
+		cat_2 = tester.getId();
+		
 		
 		System.out.println("service: " + service.all());
 		
@@ -155,13 +157,13 @@ public class CategoryTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		await(userSegmenteStore, USER_ID, 1);
+		await(userSegmenteStore, USER_ID, 2);
 
 		
 		list = userSegmenteStore.get(USER_ID);
 		assertThat(list).isNotEmpty();
 		Set<String> segments = getRawSegments(list);
 		assertThat(segments).isNotNull();
-		assertThat(segments).containsExactly(search_id);
+		assertThat(segments).containsExactly(cat_1, cat_2);
 	}
 }
