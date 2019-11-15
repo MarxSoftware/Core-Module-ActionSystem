@@ -64,7 +64,7 @@ public abstract class AbstractTest {
 	}
 	
 	protected void await(final LocalUserSegmentStore userSegmentStore, final String USER_ID, final int count) {
-		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
+		Awaitility.await().atMost(100, TimeUnit.SECONDS).until(() ->
 				!userSegmentStore.get(USER_ID).isEmpty() && userSegmentStore.get(USER_ID).size() == count
 		);
 	}

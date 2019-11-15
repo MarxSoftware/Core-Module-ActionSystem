@@ -37,6 +37,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.Entities
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
+import java.util.Arrays;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.AfterClass;
@@ -153,7 +154,7 @@ public class CategoryTest extends AbstractTest {
 		event.put(Fields._TimeStamp.value(), System.currentTimeMillis());
 		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
 		event.put(Fields.Site.value(), "testSite");
-		event.put("c_categories", "/CAT1/CAT2");
+		event.put("c_categories", Arrays.asList(new String[]{"/CAT1", "/CAT1/CAT2"}));
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						

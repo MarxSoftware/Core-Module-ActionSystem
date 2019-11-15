@@ -125,6 +125,8 @@ public class CategoryRule implements Conditional {
 			return Arrays.asList((String) object);
 		} else if (object instanceof JSONArray) {
 			return ((JSONArray) object).toJavaList(String.class);
+		} else if (object instanceof List) {
+			return (List<String>)object;
 		}
 		return Collections.EMPTY_LIST;
 	}
