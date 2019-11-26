@@ -17,14 +17,12 @@ import javax.inject.Inject;
 @Extension(RestUserInformationExtension.class)
 public class SegmentRestUserInformationExtension extends RestUserInformationExtension {
 
-	@Inject
-	private CacheLayer cachelayer;
-	
 	@Override
 	public JSONObject getUserInformation(String userid) {
 		JSONObject segments = new JSONObject();
 		
-		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid);
+//		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid);
+		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentGenerator.generate(userid);
 		JSONArray segmentArray = new JSONArray();
 		segmentList.forEach((sd) -> {
 			JSONObject segment = new JSONObject();
@@ -47,7 +45,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 
 	@Override
 	public boolean hasUserInformation(final String userid) {
-		return !CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid).isEmpty();
+		return true;
 	}
 
 	@Override

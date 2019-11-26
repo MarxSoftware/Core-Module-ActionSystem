@@ -31,13 +31,14 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
-import java.util.Arrays;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import org.testng.annotations.AfterClass;
@@ -53,66 +54,59 @@ import net.engio.mbassy.bus.MBassador;
  *
  * @author thmarx
  */
-public class CategoryTest extends AbstractTest {
+public class UserPageViewTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
 	LocalUserSegmentStore userSegmenteStore;
 	
-	private String cat_1;
-	private String notsearch_id;
-	private String cat_2;
+	UserSegmentGenerator userGenerator;
+	
+	private String testSeg_id;
+	private String testSeg2_id;
 
 	@BeforeClass
 	public void setUpClass() {
 		long timestamp = System.currentTimeMillis();
 
-
 		MBassador mbassador = new MBassador();
 		executor = new MockedExecutor();
-		
+
 		analytics = new MockAnalyticsDB();
-		
 
 		service = new EntitiesSegmentService(entities());
 
-		
-		
 		AdvancedSegment tester = new AdvancedSegment();
-		tester.setName("CAT2");
+		tester.setName("Tester");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-		String sb = "segment().and(rule(CATEGORY).path('/CAT1/CAT2').field('c_categories').count(2))";
+		String sb = "segment().site('testSite').and(rule(PAGEVIEW).page('testPage').count(1))";
 		tester.setDsl(sb);
 		service.add(tester);
-		cat_1 = tester.getId();
 		
+		testSeg_id = tester.getId();
+
 		tester = new AdvancedSegment();
-		tester.setName("CAT1");
-		tester.setActive(true);
+		tester.setName("Tester2");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-		sb = "segment().and(rule(CATEGORY).path('/CAT1').field('c_categories').count(2))";
+		sb = "segment().site('testSite2').and(rule(PAGEVIEW).page('testPage2').count(2))";
 		tester.setDsl(sb);
 		service.add(tester);
-		cat_2 = tester.getId();
 		
-		
+		testSeg2_id = tester.getId();
+
 		System.out.println("service: " + service.all());
-		
+
 		cachelayer = new MockCacheLayer();
 		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
+
+		userGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	@AfterClass
 	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-
 	}
 
 	@BeforeMethod
@@ -128,43 +122,29 @@ public class CategoryTest extends AbstractTest {
 	 *
 	 * @throws java.lang.Exception
 	 */
-	@Test(invocationCount = 1)
-	public void test_category_rule() throws Exception {
+	@Test
+	public void test_pageview_rule() throws Exception {
 
-		System.out.println("testing category rule");
-		
-		final String USER_ID = "user" + UUID.randomUUID().toString();
+		System.out.println("testing pageview rule");
 
 		JSONObject event = new JSONObject();
+//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		event.put("_timestamp", System.currentTimeMillis());
+		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
+		event.put("userid", "klaus");
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put(Fields.UserId.value(), USER_ID);
-		event.put(Fields._TimeStamp.value(), System.currentTimeMillis());
-		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
-		event.put(Fields.Site.value(), "testSite");
 		
+		event.put("page", "testPage");
+		event.put("site", "testSite");
+		event.put("event", "pageview");
+
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		Thread.sleep(2000l);
-		List<SegmentData> list = userSegmenteStore.get(USER_ID);
-		assertThat(list).isEmpty();
+		List<SegmentData> data = userGenerator.generate("klaus");
+		assertThat(data).isNotEmpty();
 		
-		event = new JSONObject();
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put(Fields.UserId.value(), USER_ID);
-		event.put(Fields._TimeStamp.value(), System.currentTimeMillis());
-		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
-		event.put(Fields.Site.value(), "testSite");
-		event.put("c_categories", Arrays.asList(new String[]{"/CAT1", "/CAT1/CAT2"}));
-		
-		analytics.track(TestHelper.event(event, new JSONObject()));
-						
-		await(userSegmenteStore, USER_ID, 2);
-
-		
-		list = userSegmenteStore.get(USER_ID);
-		assertThat(list).isNotEmpty();
-		Set<String> segments = getRawSegments(list);
+		Set<String> segments = getRawSegments(data);
 		assertThat(segments).isNotNull();
-		assertThat(segments).containsExactlyInAnyOrder(cat_1, cat_2);
+		assertThat(segments).containsExactly(testSeg_id);
 	}
 }

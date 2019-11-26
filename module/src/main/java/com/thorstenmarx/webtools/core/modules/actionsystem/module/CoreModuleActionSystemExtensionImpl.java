@@ -10,6 +10,8 @@ import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.api.execution.Executor;
 import com.thorstenmarx.webtools.api.extensions.core.CoreActionSystemExtension;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import static com.thorstenmarx.webtools.core.modules.actionsystem.module.CoreModuleActionSystemModuleLifeCycle.actionSystem;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -37,7 +39,9 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	private Executor executor;
 	
 	protected static LocalUserSegmentStore userSegmentStore;
-		
+	
+	protected static UserSegmentGenerator userSegmentGenerator;
+	
 	@Override
 	public String getName() {
 		return "CoreModule ActionSystem";
@@ -48,7 +52,9 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 		if (CoreModuleActionSystemModuleLifeCycle.actionSystem == null) {
 			userSegmentStore = new LocalUserSegmentStore(cachelayer);
 			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, userSegmentStore, executor);
-			actionSystem.start();
+//			actionSystem.start();
+
+			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new GraalDSL(moduleManager, mBassador), getSegmentService());
 		}
 		return CoreModuleActionSystemModuleLifeCycle.actionSystem;
 	}
