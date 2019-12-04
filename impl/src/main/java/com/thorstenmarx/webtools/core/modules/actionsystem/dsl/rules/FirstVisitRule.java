@@ -72,7 +72,6 @@ public class FirstVisitRule implements Conditional {
 		if (!doc.document.containsKey(Fields.Site.value())) {
 			return;
 		}
-		final String docSite = doc.document.getString(Fields.Site.value());
 		final String visitid = doc.document.getString(Fields.VisitId.value());
 
 		final String userid = doc.document.getString(Fields.UserId.value());
