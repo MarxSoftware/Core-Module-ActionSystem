@@ -39,6 +39,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.PageViewRul
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.functions.*;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
 import com.thorstenmarx.webtools.scripting.GraalScripting;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -92,6 +93,7 @@ public class GraalDSL {
 		rules.put(CampaignRule.RULE, () -> new CampaignRule());
 		rules.put(ReferrerRule.RULE, () -> new ReferrerRule());
 		rules.put(CategoryRule.RULE, () -> new CategoryRule());
+		rules.put(VisitRule.RULE, () -> new VisitRule());
 
 		if (moduleManager != null) {
 //			initExtensions(engine, rules);
@@ -120,6 +122,7 @@ public class GraalDSL {
 			bindings.put(CampaignRule.RULE, CampaignRule.RULE);
 			bindings.put(ReferrerRule.RULE, ReferrerRule.RULE);
 			bindings.put(CategoryRule.RULE, CategoryRule.RULE);
+			bindings.put(VisitRule.RULE, VisitRule.RULE);
 
 		});
 
@@ -136,6 +139,7 @@ public class GraalDSL {
 		rules.put(CampaignRule.RULE, () -> new CampaignRule());
 		rules.put(ReferrerRule.RULE, () -> new ReferrerRule());
 		rules.put(CategoryRule.RULE, () -> new CategoryRule());
+		rules.put(VisitRule.RULE, () -> new VisitRule());
 
 		if (moduleManager != null) {
 //			initExtensions(engine, rules);
@@ -159,6 +163,7 @@ public class GraalDSL {
 			bindings.put(CampaignRule.RULE, CampaignRule.RULE);
 			bindings.put(ReferrerRule.RULE, ReferrerRule.RULE);
 			bindings.put(CategoryRule.RULE, CategoryRule.RULE);
+			bindings.put(VisitRule.RULE, VisitRule.RULE);
 		});
 
 		return segment;
