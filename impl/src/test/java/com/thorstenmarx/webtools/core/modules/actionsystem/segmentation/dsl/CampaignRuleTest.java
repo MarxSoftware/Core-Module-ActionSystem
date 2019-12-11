@@ -30,6 +30,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -54,11 +56,8 @@ import net.engio.mbassy.bus.MBassador;
 public class CampaignRuleTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmenteGenerator;
 	
 	private String twitter_id;
 	private String facebook_id;
@@ -69,7 +68,6 @@ public class CampaignRuleTest extends AbstractTest {
 
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 		
 		analytics = new MockAnalyticsDB();
 		
@@ -82,17 +80,10 @@ public class CampaignRuleTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 		
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
+		userSegmenteGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
-	@AfterClass()
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
+
 
 	@BeforeMethod
 	public void setUp() {
@@ -117,9 +108,9 @@ public class CampaignRuleTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(TestHelper.event_data(USER_ID), new JSONObject()));
 		
-		await(userSegmenteStore, USER_ID, 1);
 		
-		List<SegmentData> data = userSegmenteStore.get(USER_ID);
+		
+		List<SegmentData> data = userSegmenteGenerator.generate(USER_ID);
 		assertThat(data).isNotEmpty();
 
 		SegmentData.Segment segment = data.get(0).getSegment();
@@ -132,10 +123,9 @@ public class CampaignRuleTest extends AbstractTest {
 		event.put(Fields.Referrer.combine("header"), "https://heise.de/?utm_source=facebook&utm_medium=post&utm_campaign=demo");
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
-						
-		await(userSegmenteStore, USER_ID, 2);
+					
 				
-		data = userSegmenteStore.get(USER_ID);
+		data = userSegmenteGenerator.generate(USER_ID);
 		assertThat(data).isNotEmpty();
 		
 		
