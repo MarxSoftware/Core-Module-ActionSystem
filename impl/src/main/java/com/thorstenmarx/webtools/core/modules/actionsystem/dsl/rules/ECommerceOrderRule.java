@@ -31,40 +31,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  *
  * @author thmarx
  */
-public class EventRule implements Conditional {
-	
-	public static final String RULE = "EVENT";
+public class ECommerceOrderRule implements Conditional {
 
-	private String event;
+	public static final String RULE = "ECOMMERCE_ORDER";
+
+	private static final String EVENT = "ecommerce_order";
+
 	private int count;
 	private boolean exact = false;
 
 	private final CounterMapMap<String, String> results;
-	
+
 	private final Set<String> users;
-	
-	public EventRule() {
+
+	public ECommerceOrderRule() {
 		results = new CounterMapMap<>();
 		users = new HashSet<>();
 	}
 
-	public String event() {
-		return event;
-	}
-	
-	public EventRule exact () {
+	public ECommerceOrderRule exact() {
 		this.exact = true;
-		
-		return this;
-	}
 
-	public EventRule event(final String event) {
-		this.event = event;
 		return this;
 	}
 
@@ -72,49 +63,34 @@ public class EventRule implements Conditional {
 		return count;
 	}
 
-	public EventRule count(int count) {
+	public ECommerceOrderRule count(int count) {
 		this.count = count;
 		return this;
 	}
 
-
 	@Override
 	public String toString() {
-		return "EventRule{" + "event=" + event + ", count=" + count + '}';
+		return "ECommerceOrderRule{count=" + count + '}';
 	}
 
-	public Set<String> users () {
+	public Set<String> users() {
 		return users;
 	}
-	
+
 	@Override
 	public void match() {
-		results.entrySet().forEach((entry) -> {
-			final String userid = entry.getKey();
-			Map<String, Integer> values = entry.getValue();
-			final String key = event;
-			if (!exact && values.containsKey(key) && values.get(key) >= count) {
-				// Anzahl der nötigen Events ist erreicht
-				users.add(userid);
-			} else if (exact && values.containsKey(key) && values.get(key) == count) {
-				// Anzahl der nötigen Events ist erreicht
-				users.add(userid);
-			}
-		});
+
 	}
 
 	@Override
 	public boolean valid() {
 		return true;
 	}
-	
+
 	@Override
 	public void handle(final ShardDocument doc) {
-		if (!doc.document.containsKey("site")) {
-			return;
-		}
 		final String docEvent = doc.document.getString("event");
-		if (event().equals(docEvent)) {
+		if (EVENT.equals(docEvent)) {
 			final String userid = doc.document.getString("userid");
 			results.add(userid, docEvent, 1);
 		}
@@ -122,12 +98,8 @@ public class EventRule implements Conditional {
 
 	@Override
 	public boolean affected(JSONObject event) {
-		if (!event.containsKey("site")) {
-			return false;
-		}
-		final String docSite = event.getString("site");
 		final String docEvent = event.getString("event");
-		if (event().equals(docEvent)) {
+		if (EVENT.equals(docEvent)) {
 			return true;
 		}
 		return false;
@@ -135,6 +107,16 @@ public class EventRule implements Conditional {
 
 	@Override
 	public boolean matchs(String userid) {
-		return users.contains(userid);
+		if (exact && count == 0) {
+			return !results.containsKey(userid);
+		}
+		if (results.containsKey(userid)) {
+			if (exact) {
+				return results.get(userid).get(EVENT) == count;
+			} else {
+				return results.get(userid).get(EVENT) >= count;
+			}
+		}
+		return false;
 	}
 }

@@ -45,6 +45,7 @@ public class PageViewRule implements Conditional {
 
 	private String page = MATCH_ALL_PAGES; // default page
 	private int count = 0; // default is 0
+	private boolean exact = false;
 
 	private final CounterMapMap<String, String> results;
 
@@ -57,6 +58,11 @@ public class PageViewRule implements Conditional {
 
 	public String page() {
 		return page;
+	}
+	
+	public PageViewRule exact () {
+		exact = true;
+		return this;
 	}
 
 	public PageViewRule page(String page) {
@@ -85,7 +91,10 @@ public class PageViewRule implements Conditional {
 			Map<String, Integer> values = entry.getValue();
 
 			final String key = page;
-			if (values.containsKey(key) && values.get(key) >= count) {
+			if (!exact && values.containsKey(key) && values.get(key) >= count) {
+				// Anzahl der nötigen PageViews ist erreicht
+				users.add(userid);
+			} else if (exact && values.containsKey(key) && values.get(key) == count) {
 				// Anzahl der nötigen PageViews ist erreicht
 				users.add(userid);
 			}

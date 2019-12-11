@@ -49,7 +49,7 @@ public class UserSegmentGenerator {
 	
 	protected List<Segment> get(final String userid) {
 		List<Segment> activeSegments = segmentService.all().stream().filter(Segment::isActive).collect(Collectors.toList());
-		return activeSegments.parallelStream().filter((segment) -> segment_contains_userdata(segment, userid)).collect(Collectors.toList());
+		return activeSegments.stream().filter((segment) -> segment_contains_userdata(segment, userid)).collect(Collectors.toList());
 	}
 
 	public boolean segment_contains_userdata(final Segment segment, final String userid) {

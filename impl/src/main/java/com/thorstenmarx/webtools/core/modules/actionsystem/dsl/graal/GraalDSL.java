@@ -39,6 +39,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.PageViewRul
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.functions.*;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ECommerceOrderRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
 import com.thorstenmarx.webtools.scripting.GraalScripting;
 import java.util.concurrent.ConcurrentHashMap;
@@ -94,6 +95,7 @@ public class GraalDSL {
 		rules.put(ReferrerRule.RULE, () -> new ReferrerRule());
 		rules.put(CategoryRule.RULE, () -> new CategoryRule());
 		rules.put(VisitRule.RULE, () -> new VisitRule());
+		rules.put(ECommerceOrderRule.RULE, () -> new ECommerceOrderRule());
 
 		if (moduleManager != null) {
 //			initExtensions(engine, rules);
@@ -123,6 +125,7 @@ public class GraalDSL {
 			bindings.put(ReferrerRule.RULE, ReferrerRule.RULE);
 			bindings.put(CategoryRule.RULE, CategoryRule.RULE);
 			bindings.put(VisitRule.RULE, VisitRule.RULE);
+			bindings.put(ECommerceOrderRule.RULE, ECommerceOrderRule.RULE);
 
 		});
 
@@ -140,6 +143,7 @@ public class GraalDSL {
 		rules.put(ReferrerRule.RULE, () -> new ReferrerRule());
 		rules.put(CategoryRule.RULE, () -> new CategoryRule());
 		rules.put(VisitRule.RULE, () -> new VisitRule());
+		rules.put(ECommerceOrderRule.RULE, () -> new ECommerceOrderRule());
 
 		if (moduleManager != null) {
 //			initExtensions(engine, rules);
@@ -164,6 +168,7 @@ public class GraalDSL {
 			bindings.put(ReferrerRule.RULE, ReferrerRule.RULE);
 			bindings.put(CategoryRule.RULE, CategoryRule.RULE);
 			bindings.put(VisitRule.RULE, VisitRule.RULE);
+			bindings.put(ECommerceOrderRule.RULE, ECommerceOrderRule.RULE);
 		});
 
 		return segment;

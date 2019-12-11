@@ -77,7 +77,8 @@ public class DSLSegment implements Conditional {
 	
 	@Override
 	public boolean matchs(final String userid) {
-		return conditional.matchs(userid);
+		final boolean matchs = conditional.matchs(userid);
+		return matchs;
 	}
 
 	@Override

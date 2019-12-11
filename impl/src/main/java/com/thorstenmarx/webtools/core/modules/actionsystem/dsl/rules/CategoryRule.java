@@ -44,6 +44,7 @@ public class CategoryRule implements Conditional {
 	private String field;
 	private String path;
 	private int count;
+	private boolean exact = false;
 
 	private final Set<String> users;
 
@@ -65,6 +66,11 @@ public class CategoryRule implements Conditional {
 
 	public String path() {
 		return path;
+	}
+	
+	public CategoryRule exact () {
+		exact = true;
+		return this;
 	}
 
 	public CategoryRule path(String path) {

@@ -45,6 +45,8 @@ public class VisitRule implements Conditional {
 	private final Set<String> users;
 	
 	private final Multimap<String, String> user_visits;
+	
+	private boolean exact = false;
 
 	public VisitRule() {
 		users = new HashSet<>();
@@ -55,6 +57,10 @@ public class VisitRule implements Conditional {
 
 	public int count() {
 		return count;
+	}
+	public VisitRule exact () {
+		this.exact = true;
+		return this;
 	}
 
 	public VisitRule count(int count) {
@@ -70,7 +76,9 @@ public class VisitRule implements Conditional {
 	@Override
 	public void match() {
 		user_visits.keySet().forEach((user) -> {
-			if (user_visits.get(user).size() >= count) {
+			if (!exact && user_visits.get(user).size() >= count) {
+				users.add(user);
+			} else if (exact && user_visits.get(user).size() == count) {
 				users.add(user);
 			}
 		});
