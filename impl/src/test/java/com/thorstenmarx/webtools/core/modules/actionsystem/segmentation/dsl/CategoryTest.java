@@ -31,6 +31,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -56,11 +58,8 @@ import net.engio.mbassy.bus.MBassador;
 public class CategoryTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String cat_1;
 	private String notsearch_id;
@@ -72,7 +71,6 @@ public class CategoryTest extends AbstractTest {
 
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 		
 		analytics = new MockAnalyticsDB();
 		
@@ -102,16 +100,11 @@ public class CategoryTest extends AbstractTest {
 		
 		System.out.println("service: " + service.all());
 		
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	@AfterClass
 	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
 
 	}
 
@@ -144,8 +137,7 @@ public class CategoryTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		Thread.sleep(2000l);
-		List<SegmentData> list = userSegmenteStore.get(USER_ID);
+		List<SegmentData> list = userSegmentGenerator.generate(USER_ID);
 		assertThat(list).isEmpty();
 		
 		event = new JSONObject();
@@ -158,10 +150,9 @@ public class CategoryTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 						
-		await(userSegmenteStore, USER_ID, 2);
 
 		
-		list = userSegmenteStore.get(USER_ID);
+		list = userSegmentGenerator.generate(USER_ID);
 		assertThat(list).isNotEmpty();
 		Set<String> segments = getRawSegments(list);
 		assertThat(segments).isNotNull();

@@ -23,6 +23,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
  */
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
@@ -31,6 +32,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -47,6 +50,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.engio.mbassy.bus.MBassador;
 
 /**
@@ -56,11 +60,8 @@ import net.engio.mbassy.bus.MBassador;
 public class KeyValueTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 
 	String segment_device;
 	String segment_product;
@@ -73,16 +74,19 @@ public class KeyValueTest extends AbstractTest {
 
 	
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 
 		analytics = new MockAnalyticsDB();
 
 		service = new EntitiesSegmentService(entities());
 
-		segment_product = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(KEYVALUE).key('c_products').values(['prod1']))");
-		segment_product_multi = createSegment(service, "MultiBuyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(KEYVALUE).key('c_products2').values(['prod1']))");
-		segment_product_multi_AND = createSegment(service, "MultiBuyerAND", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(KEYVALUE).key('c_products2').and().values(['prod1', 'prod2']))");
-		segment_device = createSegment(service, "Linux/Windows", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(KEYVALUE).key('os.device').values(['linux', 'windows']))");
+		segment_product = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
+				"segment().and(rule(KEYVALUE).key('c_products').values(['prod1']))");
+		segment_product_multi = createSegment(service, "MultiBuyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
+				"segment().and(rule(KEYVALUE).key('c_products2').values(['prod1']))");
+		segment_product_multi_AND = createSegment(service, "MultiBuyerAND", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
+				"segment().and(rule(KEYVALUE).key('c_products2').and().values(['prod1', 'prod2']))");
+		segment_device = createSegment(service, "Linux/Windows", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
+				"segment().and(rule(KEYVALUE).key('os.device').values(['linux', 'windows']))");
 
 		System.out.println("service: " + service.all());
 		System.out.println("segment_product: " + segment_product);
@@ -90,25 +94,10 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_product_multi_AND: " + segment_product_multi_AND);
 		System.out.println("segment_device: " + segment_device);
 
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
-	@AfterClass
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
-
-	@BeforeMethod
-	public void setUp() {
-	}
-
-	@AfterMethod
-	public void tearDown() {
-	}
+	
 
 	/**
 	 * Test of open method, of class AnalyticsDb.
@@ -120,29 +109,39 @@ public class KeyValueTest extends AbstractTest {
 
 		System.out.println("testing event rule");
 
-		// test event
-		JSONObject event = new JSONObject();
-//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "peter2");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("site", "testSite");
-		event.put("event", "order");
-		event.put("c_products", "prod1");
+		JSONObject event = createEvent("peter2", "testSite", "order", (eventObj) -> {
+		});
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		assertThat(userSegmenteStore.get("peter2")).isEmpty();
+		assertThat(userSegmentGenerator.generate("peter2")).isEmpty();
 
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
+		event = createEvent("peter2", "testSite", "order", (eventObj) -> {
+			eventObj.put("c_products", "prod1");
+		});
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(userSegmenteStore, "peter2", 1);
 
-		List<SegmentData> metaData = userSegmenteStore.get("peter2");
+		List<SegmentData> metaData = userSegmentGenerator.generate("peter2");
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product);
+	}
+
+	private JSONObject createEvent(final String userid, final String site, final String eventName, final Consumer<JSONObject> consumer) {
+		// test event
+		JSONObject event = new JSONObject();
+		//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		event.put("_timestamp", System.currentTimeMillis());
+		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
+		event.put("userid", userid);
+		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
+		event.put("site", site);
+		event.put("event", eventName);
+		
+		if (consumer != null) {
+			consumer.accept(event);
+		}
+		return event;
 	}
 	@Test
 	public void test_multiple_keyvalue_rule() throws Exception {
@@ -150,30 +149,24 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("testing event rule");
 
 		// test event
-		JSONObject event = new JSONObject();
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("userid", "linuxuser");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("os.device", "linux");
+		JSONObject event = createEvent("linuxuser", "testSite", "test", (eventObj) -> {
+			eventObj.put("os.device", "linux");
+		});
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		event = new JSONObject();
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("userid", "windowsuser");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("os.device", "windows");
+		event = createEvent("windowsuser", "testSite", "test", (eventObj) -> {
+			eventObj.put("os.device", "windows");
+		});
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		await(userSegmenteStore, "linuxuser", 1);
-		await(userSegmenteStore, "windowsuser", 1);
 
-		List<SegmentData> metaData = userSegmenteStore.get("linuxuser");
+		List<SegmentData> metaData = userSegmentGenerator.generate("linuxuser");
 		assertThat(metaData).isNotEmpty();
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).containsExactly(segment_device);
 		
-		metaData = userSegmenteStore.get("windowsuser");
+		metaData = userSegmentGenerator.generate("windowsuser");
 		segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_device);
@@ -189,23 +182,24 @@ public class KeyValueTest extends AbstractTest {
 		JSONObject event = new JSONObject();
 //		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
 		event.put("userid", USER_ID);
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		event.put("site", "testSite");
 		event.put("event", "order");
-		event.put("c_products2", new JSONArray(Arrays.asList("prod1", "prod2")));
+//		event.put("c_products2", new JSONArray(Arrays.asList("prod1", "prod2")));
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(userSegmenteStore.get(USER_ID)).isEmpty();
+		assertThat(userSegmentGenerator.generate(USER_ID)).isEmpty();
 
+		event = createEvent(USER_ID, "testSite", "order", (eventObj) -> {
+			eventObj.put("c_products2", new JSONArray(Arrays.asList("prod1", "prod2")));
+		});
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 
-		await(userSegmenteStore, USER_ID, 2);
 
-		List<SegmentData> metaData = userSegmenteStore.get(USER_ID);
+		List<SegmentData> metaData = userSegmentGenerator.generate(USER_ID);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);
@@ -224,19 +218,18 @@ public class KeyValueTest extends AbstractTest {
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		event.put("site", "testSite");
 		event.put("event", "order");
-		event.put("c_products2", new JSONArray(Arrays.asList("prod1", "prod2")));
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(userSegmenteStore.get(USER_ID)).isEmpty();
+		assertThat(userSegmentGenerator.generate(USER_ID)).isEmpty();
 
 		JSONObject event2 = (JSONObject) event.clone();
 		event2.put(Fields._UUID.value(), UUID.randomUUID().toString());
+		event2.put("c_products2", new JSONArray(Arrays.asList("prod1", "prod2")));
 		analytics.track(TestHelper.event(event2, new JSONObject()));
 
-		await(userSegmenteStore, USER_ID, 2);
 
-		List<SegmentData> metaData = userSegmenteStore.get(USER_ID);
+		List<SegmentData> metaData = userSegmentGenerator.generate(USER_ID);
 		Set<String> segments = getRawSegments(metaData);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).contains(segment_product_multi, segment_product_multi_AND);

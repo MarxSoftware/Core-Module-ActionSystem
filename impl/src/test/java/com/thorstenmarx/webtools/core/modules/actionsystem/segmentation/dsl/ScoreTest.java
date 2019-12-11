@@ -32,6 +32,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -57,11 +59,8 @@ import net.engio.mbassy.bus.MBassador;
 public class ScoreTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String demoSeg_id;
 
@@ -70,7 +69,6 @@ public class ScoreTest extends AbstractTest {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 
 		analytics = new MockAnalyticsDB();
 
@@ -87,25 +85,9 @@ public class ScoreTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
-	@AfterClass
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
-
-	@BeforeMethod
-	public void setUp() {
-	}
-
-	@AfterMethod
-	public void tearDown() {
-	}
 
 	@Test
 	public void test_score_rule() throws Exception {
@@ -135,9 +117,8 @@ public class ScoreTest extends AbstractTest {
 
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(userSegmenteStore, "peter", 1);
 
-		List<SegmentData> data = userSegmenteStore.get("peter");
+		List<SegmentData> data = userSegmentGenerator.generate("peter");
 		Set<String> segments = getRawSegments(data);
 		assertThat(segments).contains(demoSeg_id);
 

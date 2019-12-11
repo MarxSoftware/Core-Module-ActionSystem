@@ -58,9 +58,6 @@ public class UserPageViewTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
 	
 	UserSegmentGenerator userGenerator;
 	
@@ -72,7 +69,6 @@ public class UserPageViewTest extends AbstractTest {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 
 		analytics = new MockAnalyticsDB();
 
@@ -98,9 +94,6 @@ public class UserPageViewTest extends AbstractTest {
 		testSeg2_id = tester.getId();
 
 		System.out.println("service: " + service.all());
-
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
 
 		userGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}

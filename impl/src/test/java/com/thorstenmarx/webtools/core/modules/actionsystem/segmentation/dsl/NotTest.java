@@ -32,6 +32,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -59,11 +61,8 @@ import org.awaitility.Awaitility;
 public class NotTest extends AbstractTest{
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String notvisited_id;
 
@@ -83,7 +82,6 @@ public class NotTest extends AbstractTest{
 
 		
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 
 		analytics = new MockAnalyticsDB();
 		
@@ -104,16 +102,7 @@ public class NotTest extends AbstractTest{
 		
 		System.out.println("service: " + service.all());
 		
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
-	}
-
-	@AfterMethod
-	public void tearDown() {
-		actionSystem.close();
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 
@@ -137,9 +126,8 @@ public class NotTest extends AbstractTest{
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(userSegmenteStore, "notKlaus", 1);
 
-		List<SegmentData> data = userSegmenteStore.get("notKlaus");
+		List<SegmentData> data = userSegmentGenerator.generate("notKlaus");
 		assertThat(data).isNotEmpty();
 
 		Set<String> segments = getRawSegments(data);
@@ -153,7 +141,7 @@ public class NotTest extends AbstractTest{
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 		Awaitility.await().atMost(1000, TimeUnit.SECONDS).until(() ->
-				userSegmenteStore.get("notKlaus").isEmpty()
+				userSegmentGenerator.generate("notKlaus").isEmpty()
 		);
 	}
 	
@@ -178,6 +166,6 @@ public class NotTest extends AbstractTest{
 
 		Thread.sleep(2000);
 		
-		assertThat(userSegmenteStore.get("notKlaus")).isEmpty();
+		assertThat(userSegmentGenerator.generate("notKlaus")).isEmpty();
 	}
 }

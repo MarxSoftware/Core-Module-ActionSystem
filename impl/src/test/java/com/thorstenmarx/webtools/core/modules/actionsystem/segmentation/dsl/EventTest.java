@@ -30,6 +30,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -54,11 +56,8 @@ import net.engio.mbassy.bus.MBassador;
 public class EventTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 
 	String segment_id;
 
@@ -68,7 +67,6 @@ public class EventTest extends AbstractTest {
 
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 
 		analytics = new MockAnalyticsDB();
 
@@ -78,24 +76,7 @@ public class EventTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
-	}
-
-	@AfterClass
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
-
-	@BeforeMethod
-	public void setUp() {
-	}
-
-	@AfterMethod
-	public void tearDown() {
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	/**
@@ -122,14 +103,13 @@ public class EventTest extends AbstractTest {
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		assertThat(userSegmenteStore.get("peter2")).isEmpty();
+		assertThat(userSegmentGenerator.generate("peter2")).isEmpty();
 
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(userSegmenteStore, "peter2", 1);
 
-		List<SegmentData> getList = userSegmenteStore.get("peter2");
+		List<SegmentData> getList = userSegmentGenerator.generate("peter2");
 		Set<String> segments = getRawSegments(getList);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(segment_id);

@@ -31,6 +31,8 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -55,11 +57,8 @@ import net.engio.mbassy.bus.MBassador;
 public class CustomConditionalTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String conditional_ID;
 	private String facebook_id;
@@ -69,7 +68,6 @@ public class CustomConditionalTest extends AbstractTest {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 		
 		analytics = new MockAnalyticsDB();
 		
@@ -91,24 +89,7 @@ public class CustomConditionalTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 		
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
-	}
-
-	@AfterClass()
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
-
-	@BeforeMethod
-	public void setUp() {
-	}
-
-	@AfterMethod
-	public void tearDown() {
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	/**
@@ -136,10 +117,8 @@ public class CustomConditionalTest extends AbstractTest {
 		event.put("event", "pageview");
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
-		
-		await(userSegmenteStore, USER_ID, 1);
 
-		List<SegmentData> list = userSegmenteStore.get(USER_ID);
+		List<SegmentData> list = userSegmentGenerator.generate(USER_ID);
 		assertThat(list).isNotEmpty();
 
 		Set<String> segments = getRawSegments(list);

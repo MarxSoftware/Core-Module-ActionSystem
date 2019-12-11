@@ -33,7 +33,9 @@ import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
@@ -59,11 +61,9 @@ import net.engio.mbassy.bus.MBassador;
 public class ReferrerTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
+	
 	SegmentService service;
-	MockedExecutor executor;
-	CacheLayer cachelayer;
-	LocalUserSegmentStore userSegmenteStore;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String search_id;
 	private String notsearch_id;
@@ -73,7 +73,6 @@ public class ReferrerTest extends AbstractTest {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();
-		executor = new MockedExecutor();
 		
 		analytics = new MockAnalyticsDB();
 
@@ -101,24 +100,7 @@ public class ReferrerTest extends AbstractTest {
 		
 		System.out.println("service: " + service.all());
 		
-		cachelayer = new MockCacheLayer();
-		userSegmenteStore = new LocalUserSegmentStore(cachelayer);
-		
-		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
-		actionSystem.start();
-	}
-
-	@AfterClass
-	public void tearDownClass() throws InterruptedException, Exception {
-		actionSystem.close();
-	}
-
-	@BeforeMethod
-	public void setUp() {
-	}
-
-	@AfterMethod
-	public void tearDown() {
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	/**
@@ -142,9 +124,8 @@ public class ReferrerTest extends AbstractTest {
 		
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		await(userSegmenteStore, USER_ID, 1);
 		
-		List<SegmentData> data = userSegmenteStore.get(USER_ID);
+		List<SegmentData> data = userSegmentGenerator.generate(USER_ID);
 		
 		Set<String> segments = getRawSegments(data);
 
@@ -161,10 +142,9 @@ public class ReferrerTest extends AbstractTest {
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		await(userSegmenteStore, USER_ID, 1);
 
 		
-		data = userSegmenteStore.get(USER_ID);
+		data = userSegmentGenerator.generate(USER_ID);
 		segments = getRawSegments(data);
 
 		assertThat(segments).isNotNull();
