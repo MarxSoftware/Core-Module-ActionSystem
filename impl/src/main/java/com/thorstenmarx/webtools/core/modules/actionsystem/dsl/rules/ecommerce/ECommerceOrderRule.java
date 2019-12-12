@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules;
+package com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce;
 
 /*-
  * #%L
@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.collection.CounterMapMap;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,13 +45,10 @@ public class ECommerceOrderRule implements Conditional {
 	private int count;
 	private boolean exact = false;
 
-	private final CounterMapMap<String, String> results;
-
-	private final Set<String> users;
+	private final Counter counter;
 
 	public ECommerceOrderRule() {
-		results = new CounterMapMap<>();
-		users = new HashSet<>();
+		this.counter = new Counter();
 	}
 
 	public ECommerceOrderRule exact() {
@@ -73,10 +71,6 @@ public class ECommerceOrderRule implements Conditional {
 		return "ECommerceOrderRule{count=" + count + '}';
 	}
 
-	public Set<String> users() {
-		return users;
-	}
-
 	@Override
 	public void match() {
 
@@ -92,7 +86,7 @@ public class ECommerceOrderRule implements Conditional {
 		final String docEvent = doc.document.getString("event");
 		if (EVENT.equals(docEvent)) {
 			final String userid = doc.document.getString("userid");
-			results.add(userid, docEvent, 1);
+			counter.add(userid);
 		}
 	}
 
@@ -107,16 +101,10 @@ public class ECommerceOrderRule implements Conditional {
 
 	@Override
 	public boolean matchs(String userid) {
-		if (exact && count == 0) {
-			return !results.containsKey(userid);
+		if (exact) {
+			return counter.get(userid) == count;
+		} else {
+			return counter.get(userid) >= count;
 		}
-		if (results.containsKey(userid)) {
-			if (exact) {
-				return results.get(userid).get(EVENT) == count;
-			} else {
-				return results.get(userid).get(EVENT) >= count;
-			}
-		}
-		return false;
 	}
 }

@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules;
+package com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce;
 
 /*-
  * #%L
@@ -31,44 +31,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author thmarx
  */
-public class EventRule implements Conditional {
-	
-	public static final String RULE = "EVENT";
+public class ECommerceCouponRule implements Conditional {
 
-	private String event;
+	private static final Logger LOGGER = LoggerFactory.getLogger(ECommerceCouponRule.class);
+
+	public static final String RULE = "ECOMMERCE_COUPON";
+
+	private static final String EVENT = "ecommerce_order";
+
+	private static final String COUPON_COUNT_FIELD_NAME = "order_coupons_count";
+
 	private int count;
 	private boolean exact = false;
 
-	private final CounterMapMap<String, String> results;
-	
-	private final Set<String> users;
-	
-	final Counter counter;
-	
-	public EventRule() {
-		results = new CounterMapMap<>();
-		users = new HashSet<>();
-		this.counter = new Counter();
+
+	private final Counter counter;
+
+	public ECommerceCouponRule() {
+		counter = new Counter();
 	}
 
-	public String event() {
-		return event;
-	}
-	
-	public EventRule exact () {
+	public ECommerceCouponRule exact() {
 		this.exact = true;
-		
-		return this;
-	}
 
-	public EventRule event(final String event) {
-		this.event = event;
 		return this;
 	}
 
@@ -76,44 +68,51 @@ public class EventRule implements Conditional {
 		return count;
 	}
 
-	public EventRule count(int count) {
+	public ECommerceCouponRule count(int count) {
 		this.count = count;
 		return this;
 	}
 
-
 	@Override
 	public String toString() {
-		return "EventRule{" + "event=" + event + ", count=" + count + '}';
+		return "ECommerceCouponRule{" + "count=" + count + ", exact=" + exact + '}';
 	}
 
-	public Set<String> users () {
-		return users;
-	}
-	
 	@Override
 	public void match() {
+
 	}
 
 	@Override
 	public boolean valid() {
 		return true;
 	}
-	
+
 	@Override
 	public void handle(final ShardDocument doc) {
-		
 		final String docEvent = doc.document.getString("event");
-		if (event().equals(docEvent)) {
+		if (EVENT.equals(docEvent) && doc.document.containsKey(COUPON_COUNT_FIELD_NAME)) {
+
 			final String userid = doc.document.getString("userid");
-			counter.add(userid);
+			int couponsUsed = getCouponCount(doc.document.get(COUPON_COUNT_FIELD_NAME));
+			counter.add(userid, couponsUsed);
 		}
+	}
+
+	private int getCouponCount(final Object couponCountField) {
+		if (couponCountField instanceof Integer) {
+			return (int) couponCountField;
+		} else if (couponCountField instanceof String) {
+			return Integer.valueOf(String.valueOf(couponCountField));
+		}
+
+		return 0;
 	}
 
 	@Override
 	public boolean affected(JSONObject event) {
 		final String docEvent = event.getString("event");
-		if (event().equals(docEvent)) {
+		if (EVENT.equals(docEvent) && event.containsKey(COUPON_COUNT_FIELD_NAME)) {
 			return true;
 		}
 		return false;

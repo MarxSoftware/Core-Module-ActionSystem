@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl.ecommerce;
 
 /*-
  * #%L
@@ -21,12 +21,10 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
@@ -37,7 +35,6 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
-
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
@@ -50,122 +47,98 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import net.engio.mbassy.bus.MBassador;
-import org.awaitility.Awaitility;
 
 /**
  *
  * @author thmarx
  */
-public class NotTest extends AbstractTest{
+public class EcommerceCouponTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	UserSegmentGenerator userSegmentGenerator;
-	
-	private String notvisited_id;
+	private UserSegmentGenerator userSegmentGenerator;
+
+	String coupon_lover_id;
+	String no_coupon_id;
 
 	@BeforeClass
 	public void setUpClass() {
-		
+		long timestamp = System.currentTimeMillis();
+
+
+		MBassador mbassador = new MBassador();
+
+		analytics = new MockAnalyticsDB();
+
+		service = new EntitiesSegmentService(entities());
+
+		coupon_lover_id = createSegment(service, "Coupon lover", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_COUPON).count(3))");
+		no_coupon_id = createSegment(service, "Non Coupon", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_COUPON).count(0).exact())");
+
+		System.out.println("service: " + service.all());
+
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
 	@AfterClass
 	public void tearDownClass() throws InterruptedException, Exception {
-		
 	}
 
 	@BeforeMethod
 	public void setUp() {
-		long timestamp = System.currentTimeMillis();
-
-		
-		MBassador mbassador = new MBassador();
-
-		analytics = new MockAnalyticsDB();
-		
-
-		service = new EntitiesSegmentService(entities());
-
-		
-		
-		AdvancedSegment tester = new AdvancedSegment();
-		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-		tester.setActive(true);
-		tester.setName("Not Visited");
-		String sb = "segment().site('asite_not').and(not(rule(PAGEVIEW).page('apage_not').count(1)))";
-		tester.setDsl(sb);
-		service.add(tester);
-
-		notvisited_id = tester.getId();
-		
-		System.out.println("service: " + service.all());
-		
-		userSegmentGenerator = new UserSegmentGenerator(analytics, new GraalDSL(null, mbassador), service);
 	}
 
-
-
-	
-	@Test
-	public void test_not_pageview() throws Exception {
-
-		System.out.println("testing not pageview");
-
-		
-		JSONObject event = new JSONObject();
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "notKlaus");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("fingerprint", "not_klaus");
-		event.put("page", "apage1_not");
-		event.put("site", "asite_not");
-		event.put("event", "pageview");
-		
-		analytics.track(TestHelper.event(event, new JSONObject()));
-
-
-		List<SegmentData> data = userSegmentGenerator.generate("notKlaus");
-		assertThat(data).isNotEmpty();
-
-		Set<String> segments = getRawSegments(data);
-
-		assertThat(segments).isNotNull();
-		assertThat(segments).contains(notvisited_id);
-		
-		event.put("page", "apage_not");
-		event.put("site", "asite_not");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		analytics.track(TestHelper.event(event, new JSONObject()));
-		
-		Awaitility.await().atMost(1000, TimeUnit.SECONDS).until(() ->
-				userSegmentGenerator.generate("notKlaus").isEmpty()
-		);
+	@AfterMethod
+	public void tearDown() {
 	}
-	
+
+	/**
+	 * Test of open method, of class AnalyticsDb.
+	 *
+	 * @throws java.lang.Exception
+	 */
 	@Test
-	public void test_not_site_view() throws Exception {
+	public void test_ecommerce_discount_rule() throws Exception {
 
-		System.out.println("testing not site view");
-		
+		System.out.println("testing ecommerce discount rule");
 
-		
-		JSONObject event = new JSONObject();
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "notKlaus");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("fingerprint", "not_klaus");
-		event.put("page", "apage1_not");
-		event.put("site", "asite1_not");
-		event.put("event", "pageview");
-		
+		JSONObject event = getEvent("peter2", "visit", 0);
 		analytics.track(TestHelper.event(event, new JSONObject()));
-
-		Thread.sleep(2000);
 		
-		assertThat(userSegmentGenerator.generate("notKlaus")).isEmpty();
+		List<SegmentData> getList = userSegmentGenerator.generate("peter2");
+		assertThat(getList).isNotEmpty();
+		Set<String> segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(no_coupon_id);
+		
+		
+		event = getEvent("peter2", "ecommerce_order", 2);
+		analytics.track(TestHelper.event(event, new JSONObject()));
+		
+		getList = userSegmentGenerator.generate("peter2");
+		assertThat(getList).isEmpty();
+		
+		event = getEvent("peter2", "ecommerce_order", 1);
+		analytics.track(TestHelper.event(event, new JSONObject()));
+		
+		getList = userSegmentGenerator.generate("peter2");
+		assertThat(getList).isNotEmpty();
+		segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(coupon_lover_id);
+		
+	}
+
+	private JSONObject getEvent(final String userid, final String eventName, final int couponCount) {
+		// test event
+		JSONObject event = new JSONObject();
+		//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		event.put("_timestamp", System.currentTimeMillis());
+		event.put("userid", userid);
+		event.put("site", "testSite");
+		event.put("event", eventName);
+		event.put("order_coupons_count", couponCount);
+		return event;
 	}
 }

@@ -29,6 +29,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,15 +43,15 @@ public class VisitRule implements Conditional {
 	
 	private int count = 0; // default is 0
 
-	private final Set<String> users;
-	
 	private final Multimap<String, String> user_visits;
 	
 	private boolean exact = false;
+	
+	private final Counter counter;
 
 	public VisitRule() {
-		users = new HashSet<>();
 		user_visits = MultimapBuilder.hashKeys().hashSetValues().build();
+		counter = new Counter();
 	}
 
 	
@@ -70,18 +71,16 @@ public class VisitRule implements Conditional {
 
 	@Override
 	public boolean matchs(final String userid) {
-		return users.contains(userid);
+		if (exact) {
+			return counter.get(userid) == count;
+		} else {
+			return counter.get(userid) >= count;
+		}
 	}
 
 	@Override
 	public void match() {
-		user_visits.keySet().forEach((user) -> {
-			if (!exact && user_visits.get(user).size() >= count) {
-				users.add(user);
-			} else if (exact && user_visits.get(user).size() == count) {
-				users.add(user);
-			}
-		});
+
 	}
 
 	@Override
@@ -97,6 +96,7 @@ public class VisitRule implements Conditional {
 		System.out.println(user + " - " + visit);
 		if (!user_visits.containsEntry(user, visit)) {
 			user_visits.put(user, visit);
+			counter.add(user);
 		}
 	}
 

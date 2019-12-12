@@ -29,6 +29,7 @@ import com.thorstenmarx.webtools.api.analytics.Events;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.collection.CounterMapMap;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,13 +48,10 @@ public class PageViewRule implements Conditional {
 	private int count = 0; // default is 0
 	private boolean exact = false;
 
-	private final CounterMapMap<String, String> results;
-
-	private final Set<String> users;
+	private final Counter counter;
 
 	public PageViewRule() {
-		results = new CounterMapMap<>();
-		users = new HashSet<>();
+		counter = new Counter();
 	}
 
 	public String page() {
@@ -81,24 +79,16 @@ public class PageViewRule implements Conditional {
 
 	@Override
 	public boolean matchs(final String userid) {
-		return users.contains(userid);
+		if (exact) {
+			return counter.get(userid) == count;
+		} else {
+			return counter.get(userid) >= count;
+		}
 	}
 
 	@Override
 	public void match() {
-		results.entrySet().forEach((entry) -> {
-			final String userid = entry.getKey();
-			Map<String, Integer> values = entry.getValue();
-
-			final String key = page;
-			if (!exact && values.containsKey(key) && values.get(key) >= count) {
-				// Anzahl der nötigen PageViews ist erreicht
-				users.add(userid);
-			} else if (exact && values.containsKey(key) && values.get(key) == count) {
-				// Anzahl der nötigen PageViews ist erreicht
-				users.add(userid);
-			}
-		});
+		
 	}
 
 	@Override
@@ -115,7 +105,7 @@ public class PageViewRule implements Conditional {
 			if (MATCH_ALL_PAGES.equals(page) || page.equals(docPage)) {
 				final String userid = doc.document.getString("userid");
 
-				results.add(userid, page, 1);
+				counter.add(userid);
 			}	
 		}
 	}

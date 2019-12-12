@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl.ecommerce;
 
 /*-
  * #%L
