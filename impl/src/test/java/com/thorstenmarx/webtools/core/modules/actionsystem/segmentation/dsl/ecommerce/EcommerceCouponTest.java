@@ -119,7 +119,7 @@ public class EcommerceCouponTest extends AbstractTest {
 		getList = userSegmentGenerator.generate("peter2");
 		assertThat(getList).isEmpty();
 		
-		event = getEvent("peter2", "ecommerce_order", 1);
+		event = getEvent("peter2", "ecommerce_order", "1");
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
 		getList = userSegmentGenerator.generate("peter2");
@@ -131,6 +131,18 @@ public class EcommerceCouponTest extends AbstractTest {
 	}
 
 	private JSONObject getEvent(final String userid, final String eventName, final int couponCount) {
+		// test event
+		JSONObject event = new JSONObject();
+		//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		event.put("_timestamp", System.currentTimeMillis());
+		event.put("userid", userid);
+		event.put("site", "testSite");
+		event.put("event", eventName);
+		event.put("order_coupons_count", couponCount);
+		return event;
+	}
+	
+	private JSONObject getEvent(final String userid, final String eventName, final String couponCount) {
 		// test event
 		JSONObject event = new JSONObject();
 		//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
