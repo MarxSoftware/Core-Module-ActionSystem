@@ -113,13 +113,13 @@ public class NotTest extends AbstractTest{
 
 		System.out.println("testing not pageview");
 
+		final String user_id = "notKlaus + " + System.nanoTime();
 		
 		JSONObject event = new JSONObject();
 		event.put("_timestamp", System.currentTimeMillis());
 		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "notKlaus");
+		event.put(Fields.UserId.value(), user_id);
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("fingerprint", "not_klaus");
 		event.put("page", "apage1_not");
 		event.put("site", "asite_not");
 		event.put("event", "pageview");
@@ -127,7 +127,7 @@ public class NotTest extends AbstractTest{
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 
-		List<SegmentData> data = userSegmentGenerator.generate("notKlaus");
+		List<SegmentData> data = userSegmentGenerator.generate(user_id);
 		assertThat(data).isNotEmpty();
 
 		Set<String> segments = getRawSegments(data);
@@ -140,32 +140,6 @@ public class NotTest extends AbstractTest{
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		analytics.track(TestHelper.event(event, new JSONObject()));
 		
-		Awaitility.await().atMost(1000, TimeUnit.SECONDS).until(() ->
-				userSegmentGenerator.generate("notKlaus").isEmpty()
-		);
-	}
-	
-	@Test
-	public void test_not_site_view() throws Exception {
-
-		System.out.println("testing not site view");
-		
-
-		
-		JSONObject event = new JSONObject();
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "notKlaus");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("fingerprint", "not_klaus");
-		event.put("page", "apage1_not");
-		event.put("site", "asite1_not");
-		event.put("event", "pageview");
-		
-		analytics.track(TestHelper.event(event, new JSONObject()));
-
-		Thread.sleep(2000);
-		
-		assertThat(userSegmentGenerator.generate("notKlaus")).isEmpty();
+		assertThat(userSegmentGenerator.generate(user_id)).isEmpty();
 	}
 }

@@ -28,11 +28,7 @@ import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.Events;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.collection.CounterMapMap;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *

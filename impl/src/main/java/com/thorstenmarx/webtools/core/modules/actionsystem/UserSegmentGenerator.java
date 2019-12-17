@@ -75,10 +75,11 @@ public class UserSegmentGenerator {
 					documents.stream().forEach(dsl::handle);
 					dsl.match();
 					
-					Set<String> matchingUsers = new HashSet<>();
-					dsl.getAllUsers().stream().filter(dsl::matchs).forEach(matchingUsers::add);
+					return dsl.matchs(userid);
 					
-					return matchingUsers.contains(userid);
+//					Set<String> matchingUsers = new HashSet<>();
+//					dsl.getAllUsers().stream().filter(dsl::matchs).forEach(matchingUsers::add);
+//					return matchingUsers.contains(userid);
 				}
 			});
 			

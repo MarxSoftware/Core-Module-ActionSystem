@@ -27,6 +27,7 @@ import com.google.common.collect.SetMultimap;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,25 +42,31 @@ public class FirstVisitRule implements Conditional {
 	private final Set<String> users;
 
 	private final SetMultimap<String, String> userVisits;
+	private final Set<String> user_visits;
+	
+	private final Counter counter;
 
 	public FirstVisitRule() {
 		users = new HashSet<>();
 		userVisits = HashMultimap.create();
+		counter = new Counter();
+		user_visits = new HashSet<>();
 	}
 
 	@Override
 	public boolean matchs(final String userid) {
-		return users.contains(userid);
+//		return users.contains(userid) && !users.contains(this);
+		return counter.get(userid) <= 1;
 	}
 
 	@Override
 	public void match() {
-		userVisits.keySet().forEach((userid) -> {
-			Set<String> visits = userVisits.get(userid);
-			if (visits.size() == 1) {
-				users.add(userid);
-			}
-		});
+//		userVisits.keySet().forEach((userid) -> {
+//			Set<String> visits = userVisits.get(userid);
+//			if (visits.size() == 1) {
+//				users.add(userid);
+//			}
+//		});
 	}
 
 	@Override
@@ -75,16 +82,18 @@ public class FirstVisitRule implements Conditional {
 		final String visitid = doc.document.getString(Fields.VisitId.value());
 
 		final String userid = doc.document.getString(Fields.UserId.value());
+		
+		final String key = String.format("%s_%s", userid, visitid);
+		if (!user_visits.contains(key)) {
+			user_visits.add(key);
+			counter.add(userid);
+		}
 
-		userVisits.put(userid, visitid);
+//		userVisits.put(userid, visitid);
 	}
 
 	@Override
 	public boolean affected(JSONObject document) {
-		if (!document.containsKey(Fields.Site.value())) {
-			return false;
-		}
-
 		return true;
 	}
 }

@@ -29,25 +29,17 @@ import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
-import com.thorstenmarx.webtools.test.MockCacheLayer;
-import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.util.Set;
 import java.util.UUID;
@@ -146,6 +138,17 @@ public class FirstVisitTest extends AbstractTest {
 
 		assertThat(segments).isNotNull();
 		assertThat(segments).containsExactly(notfirstvisit_id);
+	}
+	
+	@Test
+	public void test_no_visit () {
+		List<SegmentData> data = userSegmentGenerator.generate("a_unknown_userid-" + System.currentTimeMillis());
+		assertThat(data).isNotEmpty();
+
+		Set<String> segments = getRawSegments(data);
+
+		assertThat(segments).isNotNull();
+		assertThat(segments).containsExactly(firstVisit_id);
 	}
 
 	@Test(invocationCount = 2)
