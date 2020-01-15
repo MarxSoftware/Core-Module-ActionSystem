@@ -8,6 +8,7 @@ import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.Aggregator;
 import com.thorstenmarx.webtools.api.analytics.query.Query;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
+import com.thorstenmarx.webtools.api.entities.criteria.Restrictions;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * @author marx
  */
 public class UserSegmentGenerator {
-	
+
 	public static final Logger LOGGER = LoggerFactory.getLogger(UserSegmentGenerator.class);
 
 	final AnalyticsDB db;
@@ -38,17 +40,28 @@ public class UserSegmentGenerator {
 
 	}
 
-	public List<SegmentData> generate (final String userid) {
-		return get(userid).stream().map(AdvancedSegment.class::cast).map((segment) -> {
-			
+	public List<SegmentData> generate(final String userid) {
+		return generate(userid, null);
+	}
+
+	public List<SegmentData> generate(final String userid, final String site) {
+		return get(userid, site).stream().map(AdvancedSegment.class::cast).map((segment) -> {
+
 			final SegmentData segmentData = new SegmentData();
-				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
 			return segmentData;
 		}).collect(Collectors.toList());
 	}
-	
-	protected List<Segment> get(final String userid) {
-		List<Segment> activeSegments = segmentService.all().stream().filter(Segment::isActive).collect(Collectors.toList());
+
+	protected List<Segment> get(final String userid, final String site) {
+		List<Segment> activeSegments;
+		if (site != null) {
+			activeSegments = segmentService.criteria().add(Restrictions.EQ.eq("site", site)).query().stream()
+					.filter(Segment::isActive)
+					.collect(Collectors.toList());
+		} else {
+			activeSegments = segmentService.all().stream().filter(Segment::isActive).collect(Collectors.toList());
+		}
 		return activeSegments.stream().filter((segment) -> segment_contains_userdata(segment, userid)).collect(Collectors.toList());
 	}
 
@@ -57,7 +70,7 @@ public class UserSegmentGenerator {
 			Query simpleQuery = Query.builder().start(segment.start()).end(segment.end())
 					.term(Fields.UserId.value(), userid)
 					.build();
-			
+
 			Future<Boolean> future;
 			future = db.query(simpleQuery, new Aggregator<Boolean>() {
 				@Override
@@ -74,20 +87,20 @@ public class UserSegmentGenerator {
 					}
 					documents.stream().forEach(dsl::handle);
 					dsl.match();
-					
+
 					return dsl.matchs(userid);
-					
+
 //					Set<String> matchingUsers = new HashSet<>();
 //					dsl.getAllUsers().stream().filter(dsl::matchs).forEach(matchingUsers::add);
 //					return matchingUsers.contains(userid);
 				}
 			});
-			
+
 			return future.get();
 		} catch (InterruptedException | ExecutionException ex) {
 			LOGGER.error("", ex);
 		}
-		
+
 		return false;
 	}
 }

@@ -25,7 +25,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 	private final String SEGMENT_DATA_KEY = "segmentdata_%s";
 
 	@Override
-	public JSONObject getUserInformation(String userid) {
+	public JSONObject getUserInformation(final String userid, final String site) {
 		JSONObject segments = new JSONObject();
 
 //		List<SegmentData> segmentList = CoreModuleActionSystemExtensionImpl.userSegmentStore.get(userid);
@@ -35,7 +35,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 		if (cachelayer.exists(cacheKey)) {
 			segmentList = cachelayer.get(cacheKey, ArrayList.class).get();
 		} else {
-			segmentList = (ArrayList<SegmentData>) CoreModuleActionSystemExtensionImpl.userSegmentGenerator.generate(userid);
+			segmentList = (ArrayList<SegmentData>) CoreModuleActionSystemExtensionImpl.userSegmentGenerator.generate(userid, site);
 			cachelayer.add(cacheKey, segmentList, 30, TimeUnit.SECONDS);
 		}
 		
@@ -60,7 +60,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 	}
 
 	@Override
-	public boolean hasUserInformation(final String userid) {
+	public boolean hasUserInformation(final String userid, final String site) {
 		return true;
 	}
 

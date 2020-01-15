@@ -43,6 +43,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.E
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceCouponRule;
 import com.thorstenmarx.webtools.scripting.GraalScripting;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +73,7 @@ public class GraalDSL {
 	public GraalDSL(final ModuleManager moduleManager, final MBassador eventBus) {
 		this.moduleManager = moduleManager;
 		this.eventBus = eventBus;
-		engine = new GraalScripting("com/thorstenmarx/webtools/core/modules/actionsystem/dsl/graal/modules/");
+		engine = new GraalScripting("com/thorstenmarx/webtools/core/modules/actionsystem/dsl/graal/modules/", Set.of(InternalCondional.class));
 	}
 
 	private void initExtensions(final ScriptEngine engine, final ConcurrentMap<String, Supplier<Conditional>> rules) {
