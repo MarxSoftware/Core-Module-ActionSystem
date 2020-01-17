@@ -38,7 +38,7 @@ public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtens
 	@Override
 	public void deactivate() {
 		if (actionSystem != null) {
-			actionSystem.close();
+//			actionSystem.close();
 		}
 	}
 
