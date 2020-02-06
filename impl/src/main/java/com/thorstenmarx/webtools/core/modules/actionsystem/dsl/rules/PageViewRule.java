@@ -39,8 +39,10 @@ public class PageViewRule implements Conditional {
 	public static final String RULE = "PAGEVIEW";
 	
 	private static final String MATCH_ALL_PAGES = "##match_all_pages##";
+	private static final String MATCH_ALL_TYPE = "##match_all_type##";
 
 	private String page = MATCH_ALL_PAGES; // default page
+	private String type = MATCH_ALL_TYPE;
 	private int count = 0; // default is 0
 	private boolean exact = false;
 
@@ -54,6 +56,10 @@ public class PageViewRule implements Conditional {
 		return page;
 	}
 	
+	public String type () {
+		return type;
+	}
+	
 	public PageViewRule exact () {
 		exact = true;
 		return this;
@@ -61,6 +67,10 @@ public class PageViewRule implements Conditional {
 
 	public PageViewRule page(String page) {
 		this.page = page;
+		return this;
+	}
+	public PageViewRule type(String type) {
+		this.type = type;
 		return this;
 	}
 
@@ -95,10 +105,12 @@ public class PageViewRule implements Conditional {
 	@Override
 	public void handle(final ShardDocument doc) {
 		final String docPage = doc.document.getString(Fields.Page.value());
+		final String docType = doc.document.getString(Fields.Type.value());
 		final String event = doc.document.getString(Fields.Event.value());
 		
 		if ((!Strings.isNullOrEmpty(event) && Events.PageView.value().equals(event))) {
-			if (MATCH_ALL_PAGES.equals(page) || page.equals(docPage)) {
+			if ((MATCH_ALL_PAGES.equals(page) || page.equals(docPage)) 
+					&& (MATCH_ALL_TYPE.equals(type) || type.equals(docType))) {
 				final String userid = doc.document.getString("userid");
 
 				counter.add(userid);
@@ -109,10 +121,12 @@ public class PageViewRule implements Conditional {
 	@Override
 	public boolean affected(JSONObject document) {
 		final String docPage = document.getString(Fields.Page.value());
+		final String docType = document.getString(Fields.Type.value());
 		final String event = document.getString(Fields.Event.value());
 		
 		if ((!Strings.isNullOrEmpty(event) && Events.PageView.value().equals(event))) {
-			if (MATCH_ALL_PAGES.equals(page) || page.equals(docPage)) {
+			if ((MATCH_ALL_PAGES.equals(page) || page.equals(docPage)) 
+					&& (MATCH_ALL_TYPE.equals(type) || type.equals(docType))) {
 				return true;
 			}	
 		}

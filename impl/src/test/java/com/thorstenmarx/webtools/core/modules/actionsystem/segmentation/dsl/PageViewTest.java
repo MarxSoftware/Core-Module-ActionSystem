@@ -28,23 +28,15 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
-import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
-import com.thorstenmarx.webtools.test.MockCacheLayer;
-import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.util.Set;
 import java.util.UUID;
@@ -92,7 +84,7 @@ public class PageViewTest extends AbstractTest {
 		tester.setDsl(sb);
 		service.add(tester);
 		
-		testSeg3_id = tester.getId();
+		testSeg2_id = tester.getId();
 
 		System.out.println("service: " + service.all());
 
@@ -119,6 +111,7 @@ public class PageViewTest extends AbstractTest {
 		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
 		event.put("fingerprint", "fp_klaus");
 		event.put("page", "testPage");
+		event.put("type", "page");
 		event.put("site", "testSite");
 		event.put("event", "pageview");
 
