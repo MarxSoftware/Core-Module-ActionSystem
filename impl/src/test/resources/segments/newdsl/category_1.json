@@ -1,0 +1,12 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ 
+			"conditional" : "category", 
+			"path" : "/CAT1/CAT2",  
+			"field" : "c_categories",
+			"count" : 2
+		}
+	]
+}

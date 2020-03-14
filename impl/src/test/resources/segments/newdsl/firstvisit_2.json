@@ -1,0 +1,7 @@
+{
+	"site" : "testSite",
+	"conditional": "not",
+	"conditions": [
+		{ "conditional" : "firstvisit"}
+	]
+}

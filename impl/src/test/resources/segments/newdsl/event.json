@@ -1,0 +1,11 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ 
+			"conditional" : "event", 
+			"event" : "order",  
+			"count" : 2
+		}
+	]
+}

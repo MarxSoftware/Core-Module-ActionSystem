@@ -1,0 +1,7 @@
+{
+	"site" : "test_site",
+	"conditional": "or",
+	"conditions": [
+		{ "conditional" : "pageview", "page" : "123", "type" : "post", "count" : 5}
+	]
+}

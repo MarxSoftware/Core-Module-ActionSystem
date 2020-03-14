@@ -1,0 +1,12 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ 
+			"conditional" : "campaign", 
+			"source" : "facebook",  
+			"medium" : "post",
+			"campaign" : "demo"
+		}
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ "conditional" : "ecommerce_orders", "count" : 0, "exact" : true}
+	]
+}

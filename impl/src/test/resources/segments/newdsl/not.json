@@ -1,0 +1,16 @@
+{
+	"site": "asite_not",
+	"conditional": "and",
+	"conditions": [
+		{
+			"conditional": "not",
+			"conditions" : [
+				{ 
+					"conditional" : "pageview",
+					"page" : "apage_not",
+					"count" : 1
+				}
+			]
+		}
+	]
+}

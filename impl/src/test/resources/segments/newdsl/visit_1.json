@@ -1,0 +1,7 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ "conditional" : "visit", "count" : 1}
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"site" : "testSite2",
+	"conditional": "and",
+	"conditions": [
+		{ "conditional" : "pageview", "page" : "testPage2",  "count" : 2}
+	]
+}

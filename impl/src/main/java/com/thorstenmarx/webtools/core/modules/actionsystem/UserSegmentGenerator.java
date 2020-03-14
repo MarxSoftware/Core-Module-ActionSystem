@@ -81,7 +81,11 @@ public class UserSegmentGenerator {
 						if (aseg.getDsl() == null) {
 							aseg.setDsl(aseg.getContent());
 						}
-						dsl = dslRunner.build(aseg.getDsl());
+						try {
+							dsl = dslRunner.build(aseg.getDsl());
+						} catch (Exception e)  {
+							throw new RuntimeException(e);
+						}
 					} else {
 						throw new IllegalStateException("unkown segment definition");
 					}
@@ -95,8 +99,9 @@ public class UserSegmentGenerator {
 //					return matchingUsers.contains(userid);
 				}
 			});
-
-			return future.get();
+			
+			
+			return future != null ? future.get() : false;
 		} catch (InterruptedException | ExecutionException ex) {
 			LOGGER.error("", ex);
 		}

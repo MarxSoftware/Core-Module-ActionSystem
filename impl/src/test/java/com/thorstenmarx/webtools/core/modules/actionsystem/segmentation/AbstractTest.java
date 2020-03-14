@@ -29,6 +29,9 @@ import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.test.MockEntities;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -71,5 +74,9 @@ public abstract class AbstractTest {
 	
 	protected static Set<String> getRawSegments(List<SegmentData> data) {
 		return data.stream().map(SegmentData::getSegment).map((s) -> s.id).collect(Collectors.toSet());
+	}
+	
+	protected String loadContent (final String file) throws IOException {
+		return new String(Files.readAllBytes(Paths.get(file)));
 	}
 }

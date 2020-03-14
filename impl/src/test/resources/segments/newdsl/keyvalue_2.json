@@ -1,0 +1,11 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ 
+			"conditional" : "keyvalue",
+			"key" : "c_products2",
+			"values" : ["prod1"]
+		}
+	]
+}

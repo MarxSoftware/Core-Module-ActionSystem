@@ -1,0 +1,7 @@
+{
+	"site" : "testSite",
+	"conditional": "and",
+	"conditions": [
+		{ "conditional" : "ecommerce_coupon", "count" : 3}
+	]
+}
