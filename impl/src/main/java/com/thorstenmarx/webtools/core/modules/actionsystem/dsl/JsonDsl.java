@@ -51,7 +51,7 @@ public class JsonDsl {
 		conditionals.put("visit", VisitRule.class);
 		
 		conditionals.put("ecommerce_coupon", ECommerceCouponRule.class);
-		conditionals.put("ecommerce_orders", ECommerceOrderRule.class);
+		conditionals.put("ecommerce_order", ECommerceOrderRule.class);
 	}
 
 	public DSLSegment parse(final String content) {
