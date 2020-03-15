@@ -23,16 +23,14 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  */
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
+import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
-import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
@@ -59,7 +57,7 @@ public class FirstVisitTest extends AbstractTest {
 	private String notfirstvisit_id;
 
 	@BeforeClass
-	public void setUpClass() throws IOException {
+	public void setUpClass() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();

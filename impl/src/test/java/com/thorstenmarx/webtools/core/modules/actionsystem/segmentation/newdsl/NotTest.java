@@ -24,6 +24,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
+import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
@@ -70,7 +71,7 @@ public class NotTest extends AbstractTest{
 	}
 
 	@BeforeMethod
-	public void setUp() throws IOException {
+	public void setUp() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
 
 		

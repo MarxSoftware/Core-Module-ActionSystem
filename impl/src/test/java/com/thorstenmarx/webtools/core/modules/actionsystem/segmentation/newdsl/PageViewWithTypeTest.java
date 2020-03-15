@@ -23,6 +23,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  */
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
+import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
@@ -57,7 +58,7 @@ public class PageViewWithTypeTest extends AbstractTest {
 	private String testSeg_id;
 
 	@BeforeClass
-	public void setUpClass() throws IOException {
+	public void setUpClass() throws IOException, InvalidSegmentException {
 		MBassador mbassador = new MBassador();
 
 		analytics = new MockAnalyticsDB();

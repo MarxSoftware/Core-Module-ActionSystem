@@ -24,6 +24,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
+import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
@@ -58,7 +59,7 @@ public class ScoreTest extends AbstractTest {
 	private String demoSeg_id;
 
 	@BeforeClass
-	public void setUpClass() throws IOException {
+	public void setUpClass() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
 
 		MBassador mbassador = new MBassador();
@@ -74,6 +75,7 @@ public class ScoreTest extends AbstractTest {
 //		String sb = "segment().and(rule(SCORE).name('demo').score(100))";
 		String sb = loadContent("src/test/resources/segments/newdsl/score.json");
 		tester.setDsl(sb);
+
 		service.add(tester);
 		demoSeg_id = tester.getId();
 

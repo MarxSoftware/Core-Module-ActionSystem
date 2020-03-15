@@ -23,6 +23,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
  */
 
 import com.thorstenmarx.webtools.api.TimeWindow;
+import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -54,7 +55,7 @@ public abstract class AbstractTest {
 		return entities;
 	}
 	
-	protected String createSegment (final SegmentService service, String name, TimeWindow start, String dsl) {
+	protected String createSegment (final SegmentService service, String name, TimeWindow start, String dsl) throws InvalidSegmentException {
 		AdvancedSegment tester = new AdvancedSegment();
 		// TODO: entities kann nicht mit id umgehen, da es denkt, es handelt ischum ein update
 		tester.setName(name);
