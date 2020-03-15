@@ -21,7 +21,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl.*;
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -29,11 +28,9 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -54,7 +51,7 @@ public class PageViewWithTypeTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	NEWDSLUserSegmentGenerator userSegmenteGenerator;
+	UserSegmentGenerator userSegmenteGenerator;
 	
 	
 	private String testSeg_id;
@@ -83,7 +80,7 @@ public class PageViewWithTypeTest extends AbstractTest {
 
 		
 		
-		userSegmenteGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmenteGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	/**

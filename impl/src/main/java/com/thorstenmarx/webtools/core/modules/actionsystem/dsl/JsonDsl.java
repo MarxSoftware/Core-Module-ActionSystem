@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.thorstenmarx.webtools.core.modules.actionsystem.newdsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -11,17 +11,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.thorstenmarx.webtools.api.actions.Conditional;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.ecommerce.ECommerceCouponRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.CampaignRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.KeyValueRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.ReferrerRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.PageViewRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.CategoryRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.EventRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.FirstVisitRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.ScoreRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.VisitRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.rules.ecommerce.ECommerceOrderRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceCouponRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.CampaignRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.KeyValueRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ReferrerRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.PageViewRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.CategoryRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.EventRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceOrderRule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

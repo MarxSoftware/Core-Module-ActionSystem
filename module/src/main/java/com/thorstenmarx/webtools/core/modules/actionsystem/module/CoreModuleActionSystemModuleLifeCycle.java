@@ -19,7 +19,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.module;
 
 import com.thorstenmarx.modules.api.ModuleLifeCycleExtension;
 import com.thorstenmarx.modules.api.annotation.Extension;
-import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 
 /**
@@ -29,7 +28,6 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.Entities
 @Extension(ModuleLifeCycleExtension.class)
 public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtension {
 
-	protected static ActionSystemImpl actionSystem;
 	protected static EntitiesSegmentService segmentService; 
 	@Override
 	public void activate() {
@@ -37,9 +35,6 @@ public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtens
 
 	@Override
 	public void deactivate() {
-		if (actionSystem != null) {
-//			actionSystem.close();
-		}
 	}
 
 	@Override

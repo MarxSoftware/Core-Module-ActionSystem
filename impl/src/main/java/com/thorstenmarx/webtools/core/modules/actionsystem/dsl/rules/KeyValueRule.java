@@ -127,6 +127,10 @@ public class KeyValueRule implements Conditional {
 			return;
 		}
 
+		if (valuesList == null || valuesList.isEmpty()) {
+			this.valuesList = Arrays.asList(values);
+		}
+		
 		List<String> docValues = docValues(doc.document);
 		docValues.stream().filter(valuesList::contains).forEach(docValue -> {
 			final String userid = doc.document.getString("userid");

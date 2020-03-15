@@ -26,6 +26,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -33,9 +34,9 @@ import java.util.Arrays;
  */
 public class AND implements Conditional {
 
-	private final Conditional [] conditionals;
+	private final List<Conditional> conditionals;
 	
-	public AND (final Conditional [] conditionals) {
+	public AND (final List<Conditional> conditionals) {
 		this.conditionals = conditionals;
 	}
 	
@@ -44,13 +45,13 @@ public class AND implements Conditional {
 		if (conditionals == null) {
 			return true;
 		}
-		return Arrays.stream(conditionals).allMatch(t -> t.matchs(userid));
+		return conditionals.stream().allMatch(t -> t.matchs(userid));
 	}
 	
 	@Override
 	public void match() {
 		if (conditionals != null) {
-			Arrays.stream(conditionals).forEach(Conditional::match);
+			conditionals.stream().forEach(Conditional::match);
 		}
 	}
 
@@ -59,17 +60,17 @@ public class AND implements Conditional {
 		if (conditionals == null) {
 			return true;
 		}
-		return Arrays.stream(conditionals).allMatch(Conditional::valid);
+		return conditionals.stream().allMatch(Conditional::valid);
 	}
 	
 	@Override
 	public void handle(final ShardDocument doc) {
-		Arrays.stream(conditionals).forEach(c -> c.handle(doc));
+		conditionals.stream().forEach(c -> c.handle(doc));
 	}
 	
 	@Override
 	public boolean affected(final JSONObject event) {
-		return Arrays.stream(conditionals).anyMatch(t -> t.affected(event));
+		return conditionals.stream().anyMatch(t -> t.affected(event));
 	}
 	
 }

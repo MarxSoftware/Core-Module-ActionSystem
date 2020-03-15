@@ -29,13 +29,11 @@ import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -56,7 +54,7 @@ public class FirstVisitTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	NEWDSLUserSegmentGenerator userSegmentGenerator;
+	UserSegmentGenerator userSegmentGenerator;
 	private String firstVisit_id;
 	private String notfirstvisit_id;
 
@@ -94,7 +92,7 @@ public class FirstVisitTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		userSegmentGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	/**
@@ -156,52 +154,4 @@ public class FirstVisitTest extends AbstractTest {
 		assertThat(segments).containsExactly(firstVisit_id);
 	}
 
-	@Test(invocationCount = 2)
-	public void simpleTest() {
-		DSLSegment not_firstvisit = new DSLSegment();
-		not_firstvisit.site("testSite");
-		not_firstvisit.not(new FirstVisitRule());
-		DSLSegment firstvisit = new DSLSegment();
-		firstvisit.site("testSite");
-		firstvisit.and(new FirstVisitRule());
-
-		final String USER_ID = "user " + UUID.randomUUID().toString();
-
-		JSONObject event = new JSONObject();
-		event.put(Fields.UserId.value(), USER_ID);
-		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
-		event.put(Fields.Site.value(), "testSite");
-
-		ShardDocument doc = new ShardDocument("s1", event);
-		not_firstvisit.handle(doc);
-		not_firstvisit.match();
-		firstvisit.handle(doc);
-		firstvisit.match();
-
-		assertThat(not_firstvisit.matchs(USER_ID)).isFalse();
-		assertThat(firstvisit.matchs(USER_ID)).isTrue();
-
-		not_firstvisit = new DSLSegment();
-		not_firstvisit.not(new FirstVisitRule());
-		not_firstvisit.site("testSite");
-		firstvisit = new DSLSegment();
-		firstvisit.and(new FirstVisitRule());
-		firstvisit.site("testSite");
-
-		event = new JSONObject();
-		event.put(Fields.UserId.value(), USER_ID);
-		event.put(Fields.VisitId.value(), UUID.randomUUID().toString());
-		event.put(Fields.Site.value(), "testSite");
-
-		ShardDocument doc2 = new ShardDocument("s1", event);
-		not_firstvisit.handle(doc);
-		not_firstvisit.handle(doc2);
-		not_firstvisit.match();
-		firstvisit.handle(doc);
-		firstvisit.handle(doc2);
-		firstvisit.match();
-
-		assertThat(not_firstvisit.matchs(USER_ID)).isTrue();
-		assertThat(firstvisit.matchs(USER_ID)).isFalse();
-	}
 }

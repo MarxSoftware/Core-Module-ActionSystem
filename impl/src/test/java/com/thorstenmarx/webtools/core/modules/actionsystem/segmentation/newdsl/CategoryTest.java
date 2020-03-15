@@ -28,9 +28,9 @@ import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -55,7 +55,7 @@ public class CategoryTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	NEWDSLUserSegmentGenerator userSegmentGenerator;
+	UserSegmentGenerator userSegmentGenerator;
 	
 	private String cat_1;
 	private String notsearch_id;
@@ -98,7 +98,7 @@ public class CategoryTest extends AbstractTest {
 		
 		System.out.println("service: " + service.all());
 		
-		userSegmentGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	@AfterClass

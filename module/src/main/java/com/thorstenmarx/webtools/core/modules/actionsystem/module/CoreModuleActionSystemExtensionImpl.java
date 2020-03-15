@@ -9,10 +9,8 @@ import com.thorstenmarx.webtools.api.cache.CacheLayer;
 import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.api.execution.Executor;
 import com.thorstenmarx.webtools.api.extensions.core.CoreActionSystemExtension;
-import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import static com.thorstenmarx.webtools.core.modules.actionsystem.module.CoreModuleActionSystemModuleLifeCycle.actionSystem;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import javax.inject.Inject;
@@ -49,14 +47,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 
 	@Override
 	public ActionSystem getActionSystem() {
-		if (CoreModuleActionSystemModuleLifeCycle.actionSystem == null) {
-			userSegmentStore = new LocalUserSegmentStore(cachelayer);
-			actionSystem = new ActionSystemImpl(analyticsDb, getSegmentService(), moduleManager, mBassador, userSegmentStore, executor);
-//			actionSystem.start();
-
-			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new GraalDSL(moduleManager, mBassador), getSegmentService());
-		}
-		return CoreModuleActionSystemModuleLifeCycle.actionSystem;
+		return null;
 	}
 
 	@Override
@@ -67,6 +58,7 @@ public class CoreModuleActionSystemExtensionImpl extends CoreActionSystemExtensi
 	public SegmentService getSegmentService() {
 		if (CoreModuleActionSystemModuleLifeCycle.segmentService == null) {
 			CoreModuleActionSystemModuleLifeCycle.segmentService = new EntitiesSegmentService(entities);
+			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new JsonDsl(), getSegmentService());
 		}
 		return CoreModuleActionSystemModuleLifeCycle.segmentService;
 	}

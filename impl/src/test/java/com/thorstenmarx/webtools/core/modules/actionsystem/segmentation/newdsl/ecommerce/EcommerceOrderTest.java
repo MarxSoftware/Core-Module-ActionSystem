@@ -26,9 +26,9 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -51,7 +51,7 @@ public class EcommerceOrderTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	private NEWDSLUserSegmentGenerator userSegmentGenerator;
+	private UserSegmentGenerator userSegmentGenerator;
 
 	String buyer_id;
 	String not_buyer_id;
@@ -74,7 +74,7 @@ public class EcommerceOrderTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		userSegmentGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	@AfterClass

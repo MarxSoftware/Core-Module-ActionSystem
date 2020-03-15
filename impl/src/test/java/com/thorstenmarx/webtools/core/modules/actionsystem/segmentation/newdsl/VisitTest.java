@@ -21,7 +21,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.dsl.*;
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -30,17 +29,13 @@ import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.cache.CacheLayer;
-import com.thorstenmarx.webtools.core.modules.actionsystem.ActionSystemImpl;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
-import com.thorstenmarx.webtools.test.MockCacheLayer;
 import com.thorstenmarx.webtools.test.MockedExecutor;
 import java.io.IOException;
 import java.util.List;
@@ -61,7 +56,6 @@ import net.engio.mbassy.bus.MBassador;
 public class VisitTest extends AbstractTest {
 
 	AnalyticsDB analytics;
-	ActionSystemImpl actionSystem;
 	SegmentService service;
 	MockedExecutor executor;
 	CacheLayer cachelayer;
@@ -69,7 +63,7 @@ public class VisitTest extends AbstractTest {
 	
 	private String testSeg_id;
 	private String testSeg2_id;
-	private NEWDSLUserSegmentGenerator userSegmentGenerator;
+	private UserSegmentGenerator userSegmentGenerator;
 
 	@BeforeClass
 	public void setUpClass() throws IOException {
@@ -109,7 +103,7 @@ public class VisitTest extends AbstractTest {
 //		actionSystem = new ActionSystemImpl(analytics, service, null, mbassador, userSegmenteStore, executor);
 //		actionSystem.start();
 		
-		userSegmentGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	@AfterClass

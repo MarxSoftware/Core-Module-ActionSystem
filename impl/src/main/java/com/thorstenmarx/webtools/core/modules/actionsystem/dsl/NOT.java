@@ -22,10 +22,12 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
  * #L%
  */
 
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.*;
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -33,9 +35,9 @@ import java.util.Arrays;
  */
 public class NOT implements Conditional {
 
-	private final Conditional [] conditionals;
+	private final List<Conditional> conditionals;
 	
-	public NOT (final Conditional [] conditionals) {
+	public NOT (final List<Conditional> conditionals) {
 		this.conditionals = conditionals;
 	}
 	
@@ -44,14 +46,14 @@ public class NOT implements Conditional {
 		if (conditionals == null) {
 			return true;
 		}
-		final boolean noneMatch = Arrays.stream(conditionals).noneMatch(t -> t.matchs(userid));
+		final boolean noneMatch = conditionals.stream().noneMatch(t -> t.matchs(userid));
 		return noneMatch;
 	}
 	
 	@Override
 	public void match() {
 		if (conditionals != null) {
-			Arrays.stream(conditionals).forEach(Conditional::match);
+			conditionals.forEach(Conditional::match);
 		}
 	}
 
@@ -60,15 +62,15 @@ public class NOT implements Conditional {
 		if (conditionals == null) {
 			return true;
 		}
-		return Arrays.stream(conditionals).allMatch(Conditional::valid);
+		return conditionals.stream().allMatch(Conditional::valid);
 	}
 	
 	@Override
 	public void handle(final ShardDocument doc) {
-		Arrays.stream(conditionals).forEach(c -> c.handle(doc));
+		conditionals.stream().forEach(c -> c.handle(doc));
 	}
 	@Override
 	public boolean affected(final JSONObject event) {
-		return Arrays.stream(conditionals).anyMatch(t -> t.affected(event));
+		return conditionals.stream().anyMatch(t -> t.affected(event));
 	}
 }

@@ -28,9 +28,9 @@ import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
-import com.thorstenmarx.webtools.core.modules.actionsystem.NEWDSLUserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
-import com.thorstenmarx.webtools.core.modules.actionsystem.newdsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
@@ -53,7 +53,7 @@ public class KeyValueTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	NEWDSLUserSegmentGenerator userSegmentGenerator;
+	UserSegmentGenerator userSegmentGenerator;
 
 	String segment_device;
 	String segment_product;
@@ -96,7 +96,7 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_product_multi_AND: " + segment_product_multi_AND);
 		System.out.println("segment_device: " + segment_device);
 
-		userSegmentGenerator = new NEWDSLUserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
 	}
 
 	

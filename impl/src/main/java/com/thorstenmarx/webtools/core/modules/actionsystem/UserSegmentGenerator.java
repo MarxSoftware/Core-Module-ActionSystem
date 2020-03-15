@@ -10,13 +10,10 @@ import com.thorstenmarx.webtools.api.analytics.query.Query;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.entities.criteria.Restrictions;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.graal.GraalDSL;
-import java.util.HashSet;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +27,10 @@ public class UserSegmentGenerator {
 	public static final Logger LOGGER = LoggerFactory.getLogger(UserSegmentGenerator.class);
 
 	final AnalyticsDB db;
-	final GraalDSL dslRunner;
+	final JsonDsl dslRunner;
 	final SegmentService segmentService;
 
-	public UserSegmentGenerator(final AnalyticsDB db, final GraalDSL dslRunner, final SegmentService segmentService) {
+	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService) {
 		this.db = db;
 		this.dslRunner = dslRunner;
 		this.segmentService = segmentService;
@@ -82,7 +79,7 @@ public class UserSegmentGenerator {
 							aseg.setDsl(aseg.getContent());
 						}
 						try {
-							dsl = dslRunner.build(aseg.getDsl());
+							dsl = dslRunner.parse(aseg.getDsl());
 						} catch (Exception e)  {
 							throw new RuntimeException(e);
 						}

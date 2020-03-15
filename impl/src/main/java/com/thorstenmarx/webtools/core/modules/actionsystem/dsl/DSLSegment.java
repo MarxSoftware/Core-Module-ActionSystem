@@ -27,6 +27,7 @@ import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,18 +55,13 @@ public class DSLSegment implements Conditional {
 		return this;
 	}
 	
-	public DSLSegment and (final Conditional...conditionals) {
-		this.conditional = new AND(conditionals);
+	public DSLSegment conditional (final Conditional conditional) {
+		this.conditional = conditional;
 		return this;
 	}
 	
-	public DSLSegment or (final Conditional...conditionals) {
-		this.conditional = new OR(conditionals);
-		return this;
-	}
-	public DSLSegment not (final Conditional...conditionals) {
-		this.conditional = new NOT(conditionals);
-		return this;
+	protected Conditional conditional () {
+		return conditional;
 	}
 
 	@Override

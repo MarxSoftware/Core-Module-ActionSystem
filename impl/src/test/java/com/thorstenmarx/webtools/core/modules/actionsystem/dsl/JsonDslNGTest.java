@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.thorstenmarx.webtools.core.modules.actionsystem.newdsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
 
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.OR;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.DSLSegment;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
