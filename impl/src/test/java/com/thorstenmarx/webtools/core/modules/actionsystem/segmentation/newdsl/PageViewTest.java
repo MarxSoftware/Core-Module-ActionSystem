@@ -26,7 +26,7 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
@@ -69,23 +69,23 @@ public class PageViewTest extends AbstractTest {
 
 		service = new EntitiesSegmentService(entities());
 
-		AdvancedSegment tester = new AdvancedSegment();
+		Segment tester = new Segment();
 		tester.setName("Tester");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().site('testSite').and(rule(PAGEVIEW).page('testPage').count(1))";
 		String sb = loadContent("src/test/resources/segments/newdsl/pageview_1.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 		service.add(tester);
 		
 		testSeg_id = tester.getId();
 
-		tester = new AdvancedSegment();
+		tester = new Segment();
 		tester.setName("Tester2");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().site('testSite2').and(rule(PAGEVIEW).page('testPage2').count(2))";
 		sb = loadContent("src/test/resources/segments/newdsl/pageview_2.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 		service.add(tester);
 		
 		testSeg2_id = tester.getId();

@@ -22,7 +22,6 @@ package com.thorstenmarx.webtools.actions.segmentation;
  * #L%
  */
 
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.model.Pair;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.SegmentSerializer;
@@ -50,20 +49,7 @@ public class SegmentSerializerTest {
 		
 		final Pair<String, Segment> segmentPair = serializer.deserialize(SegmentSerializer.VERSION_SEGMENT, pair.right);
 		Assertions.assertThat(segmentPair.right).isNotNull();
-		Assertions.assertThat(segmentPair.right).isInstanceOf(Segment.class).isNotInstanceOf(AdvancedSegment.class);
-	}
-	@Test
-	public void test_advanced_segment() {
-		SegmentSerializer serializer = new SegmentSerializer();
-		
-		Segment segment = new AdvancedSegment();
-		
-		final Pair<String, String> pair = serializer.serialize(segment);
-		Assertions.assertThat(pair.left).isEqualTo(SegmentSerializer.VERSION_ADVANCED);
-		
-		final Pair<String, Segment> segmentPair = serializer.deserialize(SegmentSerializer.VERSION_ADVANCED, pair.right);
-		Assertions.assertThat(segmentPair.right).isNotNull();
-		Assertions.assertThat(segmentPair.right).isInstanceOf(Segment.class).isInstanceOf(AdvancedSegment.class);
+		Assertions.assertThat(segmentPair.right).isInstanceOf(Segment.class).isInstanceOf(Segment.class);
 	}
 	
 }

@@ -1,7 +1,6 @@
 package com.thorstenmarx.webtools.core.modules.actionsystem;
 
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
@@ -42,7 +41,7 @@ public class UserSegmentGenerator {
 	}
 
 	public List<SegmentData> generate(final String userid, final String site) {
-		return get(userid, site).stream().map(AdvancedSegment.class::cast).map((segment) -> {
+		return get(userid, site).stream().map((segment) -> {
 
 			final SegmentData segmentData = new SegmentData();
 			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
@@ -72,28 +71,10 @@ public class UserSegmentGenerator {
 			future = db.query(simpleQuery, new Aggregator<Boolean>() {
 				@Override
 				public Boolean call() throws Exception {
-					DSLSegment dsl;
-					if (segment instanceof AdvancedSegment) {
-						AdvancedSegment aseg = (AdvancedSegment) segment;
-						if (aseg.getDsl() == null) {
-							aseg.setDsl(aseg.getContent());
-						}
-						try {
-							dsl = dslRunner.parse(aseg.getDsl());
-						} catch (Exception e)  {
-							throw new RuntimeException(e);
-						}
-					} else {
-						throw new IllegalStateException("unkown segment definition");
-					}
+					DSLSegment dsl = dslRunner.parse(segment.getContent());
 					documents.stream().forEach(dsl::handle);
 					dsl.match();
-
 					return dsl.matchs(userid);
-
-//					Set<String> matchingUsers = new HashSet<>();
-//					dsl.getAllUsers().stream().filter(dsl::matchs).forEach(matchingUsers::add);
-//					return matchingUsers.contains(userid);
 				}
 			});
 			

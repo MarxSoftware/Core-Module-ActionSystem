@@ -26,7 +26,7 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
@@ -76,23 +76,23 @@ public class CategoryTest extends AbstractTest {
 
 		
 		
-		AdvancedSegment tester = new AdvancedSegment();
+		Segment tester = new Segment();
 		tester.setName("CAT2");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().and(rule(CATEGORY).path('/CAT1/CAT2').field('c_categories').count(2))";
 		String sb = loadContent("src/test/resources/segments/newdsl/category_1.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 		service.add(tester);
 		cat_1 = tester.getId();
 		
-		tester = new AdvancedSegment();
+		tester = new Segment();
 		tester.setName("CAT1");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().and(rule(CATEGORY).path('/CAT1').field('c_categories').count(2))";
 		sb = loadContent("src/test/resources/segments/newdsl/category_2.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 		service.add(tester);
 		cat_2 = tester.getId();
 		

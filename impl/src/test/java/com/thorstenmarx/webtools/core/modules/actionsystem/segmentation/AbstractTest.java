@@ -25,7 +25,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.entities.Entities;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentStore.LocalUserSegmentStore;
@@ -56,12 +56,12 @@ public abstract class AbstractTest {
 	}
 	
 	protected String createSegment (final SegmentService service, String name, TimeWindow start, String dsl) throws InvalidSegmentException {
-		AdvancedSegment tester = new AdvancedSegment();
+		Segment tester = new Segment();
 		// TODO: entities kann nicht mit id umgehen, da es denkt, es handelt ischum ein update
 		tester.setName(name);
 		tester.setActive(true);
 		tester.start(start);
-		tester.setDsl(dsl);
+		tester.setContent(dsl);
 		service.add(tester);
 		
 		return tester.getId();

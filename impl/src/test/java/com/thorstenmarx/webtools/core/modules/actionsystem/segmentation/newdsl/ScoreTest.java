@@ -27,7 +27,7 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
@@ -68,13 +68,13 @@ public class ScoreTest extends AbstractTest {
 
 		service = new EntitiesSegmentService(entities());
 
-		AdvancedSegment tester = new AdvancedSegment();
+		Segment tester = new Segment();
 		tester.setName("DEMO");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().and(rule(SCORE).name('demo').score(100))";
 		String sb = loadContent("src/test/resources/segments/newdsl/score.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 
 		service.add(tester);
 		demoSeg_id = tester.getId();

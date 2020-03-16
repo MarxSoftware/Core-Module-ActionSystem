@@ -27,7 +27,7 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
+import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
@@ -84,13 +84,13 @@ public class NotTest extends AbstractTest{
 
 		
 		
-		AdvancedSegment tester = new AdvancedSegment();
+		Segment tester = new Segment();
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 		tester.setActive(true);
 		tester.setName("Not Visited");
 //		String sb = "segment().site('asite_not').and(not(rule(PAGEVIEW).page('apage_not').count(1)))";
 		String sb = loadContent("src/test/resources/segments/newdsl/not.json");
-		tester.setDsl(sb);
+		tester.setContent(sb);
 		service.add(tester);
 
 		notvisited_id = tester.getId();

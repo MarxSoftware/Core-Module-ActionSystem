@@ -24,8 +24,6 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.thorstenmarx.webtools.api.actions.model.AdvancedSegment;
-import com.thorstenmarx.webtools.api.actions.model.Rule;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.entities.Serializer;
 import com.thorstenmarx.webtools.api.model.Pair;
@@ -38,20 +36,18 @@ public class SegmentSerializer implements Serializer<Segment> {
 
 	private static final String VERSION = "gson";
 	public static final String VERSION_SEGMENT = VERSION + "_segment_v1";
-	public static final String VERSION_ADVANCED = VERSION + "_advanced_v1";
 
 	private final Gson gson;
 
 	public SegmentSerializer() {
 		GsonBuilder builder = new GsonBuilder();
-		builder.registerTypeAdapter(Rule.class, new RuleAdapter());
 		this.gson = builder.create();
 	}
 
 	@Override
 	public Pair<String, String> serialize(Segment object) {
 		final String content = gson.toJson(object);
-		final String version = AdvancedSegment.class.isInstance(object) ? VERSION_ADVANCED : VERSION_SEGMENT;
+		final String version = VERSION_SEGMENT;
 		Pair<String, String> result = new Pair<>(version, content);
 		return result;
 	}
@@ -60,9 +56,6 @@ public class SegmentSerializer implements Serializer<Segment> {
 	public Pair<String, Segment> deserialize(String version, String content) {
 		Segment object = null;
 		switch (version) {
-			case VERSION_ADVANCED:
-				object = gson.fromJson(content, AdvancedSegment.class);
-				break;
 			case VERSION_SEGMENT:
 				object = gson.fromJson(content, Segment.class);
 				break;
