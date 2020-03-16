@@ -15,12 +15,7 @@
 			<artifactId>webtools-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.thorstenmarx.webtools</groupId>
-			<artifactId>webtools-scripting</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
+
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>

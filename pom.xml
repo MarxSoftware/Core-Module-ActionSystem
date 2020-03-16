@@ -82,11 +82,6 @@
 			</dependency>
 			<dependency>
 				<groupId>com.thorstenmarx.webtools</groupId>
-				<artifactId>webtools-scripting</artifactId>
-				<version>${webtools.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.thorstenmarx.webtools</groupId>
 				<artifactId>webtools-test</artifactId>
 				<version>${webtools.version}</version>
 			</dependency>
