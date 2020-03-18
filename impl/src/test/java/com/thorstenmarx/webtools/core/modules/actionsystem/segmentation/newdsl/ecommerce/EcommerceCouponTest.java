@@ -70,8 +70,8 @@ public class EcommerceCouponTest extends AbstractTest {
 
 //		coupon_lover_id = createSegment(service, "Coupon lover", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_COUPON).count(3))");
 //		no_coupon_id = createSegment(service, "Non Coupon", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_COUPON).count(0).exact())");
-		coupon_lover_id = createSegment(service, "Coupon lover", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/coupon_1.json"));
-		no_coupon_id = createSegment(service, "Non Coupon", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/coupon_2.json"));
+		coupon_lover_id = createSegment(service, "Coupon lover", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/coupon_1.json"), "testSite");
+		no_coupon_id = createSegment(service, "Non Coupon", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/coupon_2.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 

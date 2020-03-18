@@ -70,8 +70,8 @@ public class EcommerceOrderTest extends AbstractTest {
 
 //		buyer_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_ORDER).count(1))");
 //		not_buyer_id = createSegment(service, "No Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(ECOMMERCE_ORDER).count(0).exact())");
-		buyer_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/order_1.json"));
-		not_buyer_id = createSegment(service, "No Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/order_2.json"));
+		buyer_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/order_1.json"), "testSite");
+		not_buyer_id = createSegment(service, "No Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/order_2.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 

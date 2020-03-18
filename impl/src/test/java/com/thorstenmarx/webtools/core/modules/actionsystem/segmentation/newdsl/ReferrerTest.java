@@ -72,6 +72,7 @@ public class ReferrerTest extends AbstractTest {
 		Segment tester = new Segment();
 		tester.setName("Search");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().and(rule(REFERRER).medium('SEARCH'))";
 		String sb = loadContent("src/test/resources/segments/newdsl/referrer_1.json");
@@ -82,6 +83,7 @@ public class ReferrerTest extends AbstractTest {
 		tester = new Segment();
 		tester.setName("Not Search");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().not(rule(REFERRER).medium('SEARCH'))";
 		sb = loadContent("src/test/resources/segments/newdsl/referrer_2.json");

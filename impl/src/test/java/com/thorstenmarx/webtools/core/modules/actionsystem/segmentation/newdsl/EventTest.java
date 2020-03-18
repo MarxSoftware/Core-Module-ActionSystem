@@ -67,7 +67,7 @@ public class EventTest extends AbstractTest {
 		service = new EntitiesSegmentService(entities());
 
 //		segment_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().site('testSite').and(rule(EVENT).event('order').count(2))");
-		segment_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/event.json"));
+		segment_id = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/event.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 

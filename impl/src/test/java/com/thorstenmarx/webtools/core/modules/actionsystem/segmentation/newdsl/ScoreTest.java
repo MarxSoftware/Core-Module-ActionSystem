@@ -71,6 +71,7 @@ public class ScoreTest extends AbstractTest {
 		Segment tester = new Segment();
 		tester.setName("DEMO");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().and(rule(SCORE).name('demo').score(100))";
 		String sb = loadContent("src/test/resources/segments/newdsl/score.json");

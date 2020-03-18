@@ -71,10 +71,10 @@ public class CampaignRuleTest extends AbstractTest {
 		service = new EntitiesSegmentService(entities());
 
 //		twitter_id = createSegment(service, "Twitter Test", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(CAMPAIGN).source('twitter').medium('tweet').campaign('test'))");
-		twitter_id = createSegment(service, "Twitter Test", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/campaign_1.json"));
+		twitter_id = createSegment(service, "Twitter Test", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/campaign_1.json"), "testSite");
 		
 //		facebook_id = createSegment(service, "Facebook demo", new TimeWindow(TimeWindow.UNIT.YEAR, 1), "segment().and(rule(CAMPAIGN).source('facebook').medium('post').campaign('demo'))");
-		facebook_id = createSegment(service, "Facebook demo", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/campaign_2.json"));
+		facebook_id = createSegment(service, "Facebook demo", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/campaign_2.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 		

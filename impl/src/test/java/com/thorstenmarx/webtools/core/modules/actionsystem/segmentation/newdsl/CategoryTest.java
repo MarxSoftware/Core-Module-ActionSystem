@@ -78,6 +78,7 @@ public class CategoryTest extends AbstractTest {
 		
 		Segment tester = new Segment();
 		tester.setName("CAT2");
+		tester.setSite("testSite");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().and(rule(CATEGORY).path('/CAT1/CAT2').field('c_categories').count(2))";
@@ -87,6 +88,7 @@ public class CategoryTest extends AbstractTest {
 		cat_1 = tester.getId();
 		
 		tester = new Segment();
+		tester.setSite("testSite");
 		tester.setName("CAT1");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));

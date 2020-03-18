@@ -60,9 +60,6 @@ public class JsonDsl {
 		DSLSegment segment = new DSLSegment();
 		if (conditionElement.isJsonObject()) {
 			JsonObject object = conditionElement.getAsJsonObject();
-			if (object.has("site")) {
-				segment.site(object.get("site").getAsString());
-			}
 		}
 		Optional<Conditional> handleCondition = handleCondition(conditionElement);
 		if (handleCondition.isPresent()) {

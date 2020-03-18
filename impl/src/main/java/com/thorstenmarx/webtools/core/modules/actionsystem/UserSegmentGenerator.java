@@ -65,6 +65,7 @@ public class UserSegmentGenerator {
 		try {
 			Query simpleQuery = Query.builder().start(segment.start()).end(segment.end())
 					.term(Fields.UserId.value(), userid)
+					.term(Fields.Site.value(), segment.getSite())
 					.build();
 
 			Future<Boolean> future;

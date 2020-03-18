@@ -83,13 +83,13 @@ public class KeyValueTest extends AbstractTest {
 		
 
 		segment_product = createSegment(service, "Buyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
-				loadContent("src/test/resources/segments/newdsl/keyvalue_1.json"));
+				loadContent("src/test/resources/segments/newdsl/keyvalue_1.json"), "testSite");
 		segment_product_multi = createSegment(service, "MultiBuyer", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
-				loadContent("src/test/resources/segments/newdsl/keyvalue_2.json"));
+				loadContent("src/test/resources/segments/newdsl/keyvalue_2.json"), "testSite");
 		segment_product_multi_AND = createSegment(service, "MultiBuyerAND", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
-				loadContent("src/test/resources/segments/newdsl/keyvalue_3.json"));
+				loadContent("src/test/resources/segments/newdsl/keyvalue_3.json"), "testSite");
 		segment_device = createSegment(service, "Linux/Windows", new TimeWindow(TimeWindow.UNIT.YEAR, 1), 
-				loadContent("src/test/resources/segments/newdsl/keyvalue_4.json"));
+				loadContent("src/test/resources/segments/newdsl/keyvalue_4.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 		System.out.println("segment_product: " + segment_product);

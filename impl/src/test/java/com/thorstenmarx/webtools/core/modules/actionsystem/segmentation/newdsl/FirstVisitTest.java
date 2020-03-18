@@ -68,6 +68,7 @@ public class FirstVisitTest extends AbstractTest {
 
 		Segment tester = new Segment();
 		tester.setName("FirstVisit");
+		tester.setSite("testSite");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().site('testSite').and(rule(FIRSTVISIT))";
@@ -80,6 +81,7 @@ public class FirstVisitTest extends AbstractTest {
 		tester = new Segment();
 		tester.setName("Not FirstVisit");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().site('testSite').not(rule(FIRSTVISIT))";
 		sb = loadContent("src/test/resources/segments/newdsl/firstvisit_2.json");

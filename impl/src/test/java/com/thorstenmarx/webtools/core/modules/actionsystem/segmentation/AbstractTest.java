@@ -55,13 +55,14 @@ public abstract class AbstractTest {
 		return entities;
 	}
 	
-	protected String createSegment (final SegmentService service, String name, TimeWindow start, String dsl) throws InvalidSegmentException {
+	protected String createSegment (final SegmentService service, final String name, final TimeWindow start, final String dsl, final String site) throws InvalidSegmentException {
 		Segment tester = new Segment();
 		// TODO: entities kann nicht mit id umgehen, da es denkt, es handelt ischum ein update
 		tester.setName(name);
 		tester.setActive(true);
 		tester.start(start);
 		tester.setContent(dsl);
+		tester.setSite(site);
 		service.add(tester);
 		
 		return tester.getId();

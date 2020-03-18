@@ -86,6 +86,7 @@ public class NotTest extends AbstractTest{
 		
 		Segment tester = new Segment();
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
+		tester.setSite("asite_note");
 		tester.setActive(true);
 		tester.setName("Not Visited");
 //		String sb = "segment().site('asite_not').and(not(rule(PAGEVIEW).page('apage_not').count(1)))";

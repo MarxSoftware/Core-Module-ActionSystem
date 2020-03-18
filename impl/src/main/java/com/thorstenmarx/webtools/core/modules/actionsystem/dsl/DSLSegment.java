@@ -44,17 +44,10 @@ public class DSLSegment implements Conditional {
 	
 	private Set<String> allUsers;
 	
-	public String site;
-	
 	public DSLSegment () {
 		allUsers = Collections.synchronizedSet(new HashSet());
 	}
 
-	public DSLSegment site (final String site) {
-		this.site = site;
-		return this;
-	}
-	
 	public DSLSegment conditional (final Conditional conditional) {
 		this.conditional = conditional;
 		return this;
@@ -87,26 +80,12 @@ public class DSLSegment implements Conditional {
 		final String userid = doc.document.getString("userid");
 		final String docSite = doc.document.getString("site");
 		
-		if (site != null && !site.equals(docSite)) {
-			return;
-		}
-		
-		
 		allUsers.add(userid);
 		conditional.handle(doc);
 	}
 	
 	@Override
 	public boolean affected (final JSONObject event) {
-		
-		if (!event.containsKey("site")) {
-			return false;
-		}
-		final String docSite = event.getString("site");
-		if (site != null && site.equals(docSite)) {
-			return true;
-		}
-		
 		return conditional.affected(event);
 	}
 

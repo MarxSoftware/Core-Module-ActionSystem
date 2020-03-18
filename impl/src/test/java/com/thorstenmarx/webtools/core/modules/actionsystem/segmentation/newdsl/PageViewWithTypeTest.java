@@ -68,6 +68,7 @@ public class PageViewWithTypeTest extends AbstractTest {
 		Segment tester = new Segment();
 		tester.setName("Tester");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().site('testSite').and(rule(PAGEVIEW).page('testPage').type('post').count(1))";
 		String sb = loadContent("src/test/resources/segments/newdsl/pageview_type.json");

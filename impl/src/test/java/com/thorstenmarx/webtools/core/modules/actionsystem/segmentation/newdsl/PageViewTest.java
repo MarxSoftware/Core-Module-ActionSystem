@@ -72,6 +72,7 @@ public class PageViewTest extends AbstractTest {
 		Segment tester = new Segment();
 		tester.setName("Tester");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().site('testSite').and(rule(PAGEVIEW).page('testPage').count(1))";
 		String sb = loadContent("src/test/resources/segments/newdsl/pageview_1.json");
@@ -81,6 +82,7 @@ public class PageViewTest extends AbstractTest {
 		testSeg_id = tester.getId();
 
 		tester = new Segment();
+		tester.setSite("testSite2");
 		tester.setName("Tester2");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().site('testSite2').and(rule(PAGEVIEW).page('testPage2').count(2))";

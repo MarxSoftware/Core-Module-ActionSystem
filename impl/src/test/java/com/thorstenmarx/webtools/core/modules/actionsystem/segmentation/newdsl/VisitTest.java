@@ -77,6 +77,7 @@ public class VisitTest extends AbstractTest {
 		Segment tester = new Segment();
 		tester.setName("Tester");
 		tester.setActive(true);
+		tester.setSite("testSite");
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		String sb = "segment().site('testSite').and(rule(VISIT).count(1))";
 		String sb = loadContent("src/test/resources/segments/newdsl/visit_1.json");
@@ -87,6 +88,7 @@ public class VisitTest extends AbstractTest {
 
 		tester = new Segment();
 		tester.setName("Tester2");
+		tester.setSite("testSite");
 		tester.setActive(true);
 		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
 //		sb = "segment().site('testSite').and(rule(VISIT).count(2))";

@@ -30,7 +30,6 @@ public class JsonDslNGTest {
 		DSLSegment dslSegment = dslGenerator.parse(segment);
 		
 		assertThat(dslSegment).isNotNull();
-		assertThat(dslSegment.site).isNotEmpty().isEqualTo("test_site");
 		
 		assertThat(dslSegment.conditional()).isNotNull().isInstanceOf(OR.class);
 	}
