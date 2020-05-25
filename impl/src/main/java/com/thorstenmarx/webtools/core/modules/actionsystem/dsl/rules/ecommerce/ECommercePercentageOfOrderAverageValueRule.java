@@ -30,24 +30,35 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterDouble;
 import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
 import java.lang.reflect.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author thmarx
  */
-public class ECommerceBigSpenderRule implements Conditional {
+public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ECommercePercentageOfOrderAverageValueRule.class);
 
-	public static final String RULE = "ECOMMERCE_BIG_SPENDER";
+	public static final String RULE = "ECOMMERCE_PERCENTAGE_OF_ORDER_AVERAGE_VALUE";
 
 	private static final String EVENT = "ecommerce_order";
 
 	private final CounterDouble counter;
 
 	private final ServiceRegistry registry;
+	
+	private float percentage = 150;
 
-	public ECommerceBigSpenderRule(final ServiceRegistry registry) {
+	public ECommercePercentageOfOrderAverageValueRule(final ServiceRegistry registry) {
 		this.registry = registry;
 		this.counter = new CounterDouble();
+	}
+	
+	public ECommercePercentageOfOrderAverageValueRule setPercentage (final float percentage) {
+		this.percentage = percentage;
+		return this;
 	}
 
 	@Override
@@ -93,14 +104,18 @@ public class ECommerceBigSpenderRule implements Conditional {
 		final String site = UserSegmentGenerator.CONTEXT.get() != null ? UserSegmentGenerator.CONTEXT.get().site : null;
 		try {
 			final Number order_average = service.getKpi("order_average_value", site, 0, System.currentTimeMillis());
-			if (counter.get(userid) >= order_average.doubleValue()) {
+			double user_percentage = calculatePercentage(counter.get(userid), order_average.doubleValue());
+			if (user_percentage >= percentage) {
 				return true;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 		return false;
 	}
+	public double calculatePercentage(double obtained, double total) {
+        return obtained * 100 / total;
+    }
 
 	private double toDouble(final Object value) {
 		if (value instanceof Double) {
@@ -114,7 +129,7 @@ public class ECommerceBigSpenderRule implements Conditional {
 		return 0d;
 	}
 
-	public static class Creator implements InstanceCreator<ECommerceBigSpenderRule> {
+	public static class Creator implements InstanceCreator<ECommercePercentageOfOrderAverageValueRule> {
 
 		final ServiceRegistry registry;
 
@@ -123,8 +138,8 @@ public class ECommerceBigSpenderRule implements Conditional {
 		}
 
 		@Override
-		public ECommerceBigSpenderRule createInstance(final Type type) {
-			return new ECommerceBigSpenderRule(registry);
+		public ECommercePercentageOfOrderAverageValueRule createInstance(final Type type) {
+			return new ECommercePercentageOfOrderAverageValueRule(registry);
 		}
 
 	}

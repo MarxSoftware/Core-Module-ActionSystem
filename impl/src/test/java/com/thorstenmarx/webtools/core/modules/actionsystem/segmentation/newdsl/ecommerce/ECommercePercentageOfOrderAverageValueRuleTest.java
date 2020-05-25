@@ -50,7 +50,7 @@ import net.engio.mbassy.bus.MBassador;
  *
  * @author thmarx
  */
-public class EcommerceBigSpenderTest extends AbstractTest {
+public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
@@ -62,7 +62,6 @@ public class EcommerceBigSpenderTest extends AbstractTest {
 	@BeforeClass
 	public void setUpClass() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
-
 
 		MBassador mbassador = new MBassador();
 
@@ -108,21 +107,26 @@ public class EcommerceBigSpenderTest extends AbstractTest {
 
 		JSONObject event = getEvent("peter2", "visit");
 		analytics.track(TestHelper.event(event, new JSONObject()));
-		
+
+		for (int i = 0; i < 4; i++) {
+			event = getEvent("klaus" + i, "ecommerce_order");
+			event.put("c_order_total", "50.0");
+			analytics.track(TestHelper.event(event, new JSONObject()));
+		}
+
 		List<SegmentData> getList = userSegmentGenerator.generate("peter2");
 		assertThat(getList).isEmpty();
-		
-		
+
 		event = getEvent("peter2", "ecommerce_order");
-		event.put("c_order_total", "50.0");
+		event.put("c_order_total", "100.0");
 		analytics.track(TestHelper.event(event, new JSONObject()));
-		
+
 		getList = userSegmentGenerator.generate("peter2");
 		assertThat(getList).isNotEmpty();
 		Set<String> segments = getRawSegments(getList);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(big_spender);
-		
+
 	}
 
 	private JSONObject getEvent(final String userid, final String eventName) {

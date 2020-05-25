@@ -24,7 +24,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.EventRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
-import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceBigSpenderRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommercePercentageOfOrderAverageValueRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceOrderRule;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,10 +60,10 @@ public class JsonDsl {
 
 		conditionals.put("ecommerce_coupon", ECommerceCouponRule.class);
 		conditionals.put("ecommerce_order", ECommerceOrderRule.class);
-		conditionals.put("ecommerce_big_spender", ECommerceBigSpenderRule.class);
+		conditionals.put("ecommerce_aov_percentage", ECommercePercentageOfOrderAverageValueRule.class);
 
 		this.gson = new GsonBuilder()
-				.registerTypeAdapter(ECommerceBigSpenderRule.class, new ECommerceBigSpenderRule.Creator(serviceRegistry))
+				.registerTypeAdapter(ECommercePercentageOfOrderAverageValueRule.class, new ECommercePercentageOfOrderAverageValueRule.Creator(serviceRegistry))
 				.create();
 	}
 
