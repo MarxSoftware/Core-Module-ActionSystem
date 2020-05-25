@@ -1,5 +1,6 @@
 package com.thorstenmarx.webtools.core.modules.actionsystem;
 
+import com.thorstenmarx.modules.api.ServiceRegistry;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
@@ -29,11 +30,19 @@ public class UserSegmentGenerator {
 	final JsonDsl dslRunner;
 	final SegmentService segmentService;
 
+	final ServiceRegistry serviceRegistry;
+
+	public final static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
+
 	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService) {
+		this(db, dslRunner, segmentService, new ServiceRegistry());
+	}
+
+	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService, final ServiceRegistry serviceRegistry) {
 		this.db = db;
 		this.dslRunner = dslRunner;
 		this.segmentService = segmentService;
-
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	public List<SegmentData> generate(final String userid) {
@@ -41,12 +50,19 @@ public class UserSegmentGenerator {
 	}
 
 	public List<SegmentData> generate(final String userid, final String site) {
-		return get(userid, site).stream().map((segment) -> {
+		try {
+			Context context = new Context();
+			context.site = site;
+			CONTEXT.set(context);
+			return get(userid, site).stream().map((segment) -> {
 
-			final SegmentData segmentData = new SegmentData();
-			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
-			return segmentData;
-		}).collect(Collectors.toList());
+				final SegmentData segmentData = new SegmentData();
+				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+				return segmentData;
+			}).collect(Collectors.toList());
+		} finally {
+			CONTEXT.remove();
+		}
 	}
 
 	protected List<Segment> get(final String userid, final String site) {
@@ -78,8 +94,7 @@ public class UserSegmentGenerator {
 					return dsl.matchs(userid);
 				}
 			});
-			
-			
+
 			return future != null ? future.get() : false;
 		} catch (InterruptedException | ExecutionException ex) {
 			LOGGER.error("", ex);

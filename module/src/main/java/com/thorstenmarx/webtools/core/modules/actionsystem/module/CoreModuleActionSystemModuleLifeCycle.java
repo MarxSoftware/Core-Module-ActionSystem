@@ -19,7 +19,12 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.module;
 
 import com.thorstenmarx.modules.api.ModuleLifeCycleExtension;
 import com.thorstenmarx.modules.api.annotation.Extension;
+import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
+import com.thorstenmarx.webtools.api.entities.Entities;
+import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
+import javax.inject.Inject;
 
 /**
  *
@@ -28,9 +33,21 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.Entities
 @Extension(ModuleLifeCycleExtension.class)
 public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtension {
 
-	protected static EntitiesSegmentService segmentService; 
+	@Inject
+	private AnalyticsDB analyticsDb;
+	@Inject
+	private Entities entities;
+
+	protected static UserSegmentGenerator userSegmentGenerator;
+
+	protected static EntitiesSegmentService segmentService;
+
 	@Override
 	public void activate() {
+		if (segmentService == null) {
+			segmentService = new EntitiesSegmentService(entities);
+			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new JsonDsl(getContext().serviceRegistry()), segmentService, getContext().serviceRegistry());
+		}
 	}
 
 	@Override

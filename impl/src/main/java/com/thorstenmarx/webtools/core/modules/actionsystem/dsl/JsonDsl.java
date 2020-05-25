@@ -5,11 +5,14 @@
  */
 package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
 
+import com.thorstenmarx.webtools.core.modules.actionsystem.Context;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.thorstenmarx.modules.api.ServiceRegistry;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceCouponRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.CampaignRule;
@@ -21,6 +24,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.EventRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.FirstVisitRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ScoreRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.VisitRule;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceBigSpenderRule;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce.ECommerceOrderRule;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,11 +39,15 @@ import java.util.Optional;
  */
 public class JsonDsl {
 
-	private final Gson gson = new Gson();
+	private final Gson gson;
 
-	private Map<String, Class<? extends Conditional>> conditionals = new HashMap<>();
+	private final Map<String, Class<? extends Conditional>> conditionals = new HashMap<>();
 
-	public JsonDsl() {
+	private final ServiceRegistry serviceRegistry;
+
+	public JsonDsl(final ServiceRegistry serviceRegistry) {
+		this.serviceRegistry = new ServiceRegistry();
+
 		conditionals.put("pageview", PageViewRule.class);
 		conditionals.put("campaign", CampaignRule.class);
 		conditionals.put("category", CategoryRule.class);
@@ -49,14 +57,20 @@ public class JsonDsl {
 		conditionals.put("referrer", ReferrerRule.class);
 		conditionals.put("score", ScoreRule.class);
 		conditionals.put("visit", VisitRule.class);
-		
+
 		conditionals.put("ecommerce_coupon", ECommerceCouponRule.class);
 		conditionals.put("ecommerce_order", ECommerceOrderRule.class);
+		conditionals.put("ecommerce_big_spender", ECommerceBigSpenderRule.class);
+
+		this.gson = new GsonBuilder()
+				.registerTypeAdapter(ECommerceBigSpenderRule.class, new ECommerceBigSpenderRule.Creator(serviceRegistry))
+				.create();
 	}
 
 	public DSLSegment parse(final String content) {
+
 		JsonElement conditionElement = JsonParser.parseString(content);
-		
+
 		DSLSegment segment = new DSLSegment();
 		if (conditionElement.isJsonObject()) {
 			JsonObject object = conditionElement.getAsJsonObject();
@@ -65,8 +79,9 @@ public class JsonDsl {
 		if (handleCondition.isPresent()) {
 			segment.conditional(handleCondition.get());
 		}
-		
+
 		return segment;
+
 	}
 
 	private Optional<Conditional> handleCondition(final JsonElement condition) {
@@ -100,14 +115,14 @@ public class JsonDsl {
 	private List<Conditional> handleConditions(final JsonArray conditionsArray) {
 
 		final List<Conditional> conditionals = new ArrayList<>();
-		
+
 		for (final JsonElement conditionElement : conditionsArray) {
 			Optional<Conditional> conditional = handleCondition(conditionElement);
 			if (conditional.isPresent()) {
 				conditionals.add(conditional.get());
 			}
 		}
-		
+
 		return conditionals;
 	}
 }

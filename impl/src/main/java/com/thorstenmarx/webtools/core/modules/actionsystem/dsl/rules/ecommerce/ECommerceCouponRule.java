@@ -24,13 +24,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.dsl.rules.ecommerce;
 import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.collection.CounterMapMap;
-import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +46,10 @@ public class ECommerceCouponRule implements Conditional {
 	private boolean exact = false;
 
 
-	private final Counter counter;
+	private final CounterInt counter;
 
 	public ECommerceCouponRule() {
-		counter = new Counter();
+		counter = new CounterInt();
 	}
 
 	public ECommerceCouponRule exact() {

@@ -29,7 +29,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,11 +47,11 @@ public class VisitRule implements Conditional {
 	
 	private boolean exact = false;
 	
-	private final Counter counter;
+	private final CounterInt counter;
 
 	public VisitRule() {
 		user_visits = MultimapBuilder.hashKeys().hashSetValues().build();
-		counter = new Counter();
+		counter = new CounterInt();
 	}
 
 	

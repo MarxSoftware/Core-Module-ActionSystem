@@ -23,6 +23,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  */
 
 import com.alibaba.fastjson.JSONObject;
+import com.thorstenmarx.modules.api.ServiceRegistry;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -98,7 +99,7 @@ public class NotTest extends AbstractTest{
 		
 		System.out.println("service: " + service.all());
 		
-		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(new ServiceRegistry()), service);
 	}
 
 

@@ -35,7 +35,7 @@ public class SegmentRestUserInformationExtension extends RestUserInformationExte
 		if (cachelayer.exists(cacheKey)) {
 			segmentList = cachelayer.get(cacheKey, ArrayList.class).get();
 		} else {
-			segmentList = (ArrayList<SegmentData>) CoreModuleActionSystemExtensionImpl.userSegmentGenerator.generate(userid, site);
+			segmentList = (ArrayList<SegmentData>) CoreModuleActionSystemModuleLifeCycle.userSegmentGenerator.generate(userid, site);
 			cachelayer.add(cacheKey, segmentList, 10, TimeUnit.SECONDS);
 		}
 		

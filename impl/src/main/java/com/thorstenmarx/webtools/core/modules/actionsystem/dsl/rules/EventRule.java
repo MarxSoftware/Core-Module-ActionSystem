@@ -25,7 +25,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.collection.CounterMapMap;
-import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,12 +49,12 @@ public class EventRule implements Conditional {
 	
 	private final Set<String> users;
 	
-	final Counter counter;
+	final CounterInt counter;
 	
 	public EventRule() {
 		results = new CounterMapMap<>();
 		users = new HashSet<>();
-		this.counter = new Counter();
+		this.counter = new CounterInt();
 	}
 
 	public String event() {

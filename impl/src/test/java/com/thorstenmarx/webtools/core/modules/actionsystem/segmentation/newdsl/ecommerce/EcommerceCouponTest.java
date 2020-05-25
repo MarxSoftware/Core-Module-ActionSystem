@@ -22,6 +22,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl.
  * #L%
  */
 import com.alibaba.fastjson.JSONObject;
+import com.thorstenmarx.modules.api.ServiceRegistry;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -56,13 +57,15 @@ public class EcommerceCouponTest extends AbstractTest {
 
 	String coupon_lover_id;
 	String no_coupon_id;
+	
+	ServiceRegistry registry;
 
 	@BeforeClass
 	public void setUpClass() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
 
 
-		MBassador mbassador = new MBassador();
+		registry = new ServiceRegistry();
 
 		analytics = new MockAnalyticsDB();
 
@@ -75,7 +78,7 @@ public class EcommerceCouponTest extends AbstractTest {
 
 		System.out.println("service: " + service.all());
 
-		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(registry), service);
 	}
 
 	@AfterClass

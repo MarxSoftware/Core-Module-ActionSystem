@@ -27,7 +27,7 @@ import com.google.common.collect.SetMultimap;
 import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
-import com.thorstenmarx.webtools.core.modules.actionsystem.util.Counter;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,12 +44,12 @@ public class FirstVisitRule implements Conditional {
 	private final SetMultimap<String, String> userVisits;
 	private final Set<String> user_visits;
 	
-	private final Counter counter;
+	private final CounterInt counter;
 
 	public FirstVisitRule() {
 		users = new HashSet<>();
 		userVisits = HashMultimap.create();
-		counter = new Counter();
+		counter = new CounterInt();
 		user_visits = new HashSet<>();
 	}
 

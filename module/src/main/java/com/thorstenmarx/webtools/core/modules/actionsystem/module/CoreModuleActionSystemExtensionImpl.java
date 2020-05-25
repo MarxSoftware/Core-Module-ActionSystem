@@ -22,21 +22,7 @@ import net.engio.mbassy.bus.MBassador;
 @Extension(CoreSegmentationExtension.class)
 public class CoreModuleActionSystemExtensionImpl extends CoreSegmentationExtension {
 
-	@Inject
-	private AnalyticsDB analyticsDb;
-	@Inject
-	private Entities entities;
-	@Inject
-	private ModuleManager moduleManager;
-	@Inject
-	private MBassador mBassador;
-	@Inject
-	private CacheLayer cachelayer;
-	@Inject
-	private Executor executor;
-	
-	
-	protected static UserSegmentGenerator userSegmentGenerator;
+
 	
 	@Override
 	public String getName() {
@@ -50,10 +36,6 @@ public class CoreModuleActionSystemExtensionImpl extends CoreSegmentationExtensi
 
 	@Override
 	public SegmentService getSegmentService() {
-		if (CoreModuleActionSystemModuleLifeCycle.segmentService == null) {
-			CoreModuleActionSystemModuleLifeCycle.segmentService = new EntitiesSegmentService(entities);
-			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new JsonDsl(), getSegmentService());
-		}
 		return CoreModuleActionSystemModuleLifeCycle.segmentService;
 	}
 

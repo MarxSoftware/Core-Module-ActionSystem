@@ -1,4 +1,4 @@
-package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
+package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl.ecommerce;
 
 /*-
  * #%L
@@ -27,42 +27,42 @@ import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
-import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
-import com.thorstenmarx.webtools.api.analytics.Fields;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.TestHelper;
 import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.AbstractTest;
 import com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.EntitiesSegmentService;
+import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
 import com.thorstenmarx.webtools.test.MockAnalyticsDB;
 import java.io.IOException;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.util.Set;
-import java.util.UUID;
 import net.engio.mbassy.bus.MBassador;
 
 /**
  *
  * @author thmarx
  */
-public class PageViewTest extends AbstractTest {
+public class EcommerceBigSpenderTest extends AbstractTest {
 
 	AnalyticsDB analytics;
 	SegmentService service;
-	UserSegmentGenerator userSegmenteGenerator;
-	
-	
-	private String testSeg_id;
-	private String testSeg2_id;
-	private String testSeg3_id;
+	private UserSegmentGenerator userSegmentGenerator;
+
+	String big_spender;
+	String not_buyer_id;
 
 	@BeforeClass
 	public void setUpClass() throws IOException, InvalidSegmentException {
 		long timestamp = System.currentTimeMillis();
+
 
 		MBassador mbassador = new MBassador();
 
@@ -70,34 +70,30 @@ public class PageViewTest extends AbstractTest {
 
 		service = new EntitiesSegmentService(entities());
 
-		Segment tester = new Segment();
-		tester.setName("Tester");
-		tester.setActive(true);
-		tester.setSite("testSite");
-		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-//		String sb = "segment().site('testSite').and(rule(PAGEVIEW).page('testPage').count(1))";
-		String sb = loadContent("src/test/resources/segments/newdsl/pageview_1.json");
-		tester.setContent(sb);
-		service.add(tester);
-		
-		testSeg_id = tester.getId();
-
-		tester = new Segment();
-		tester.setSite("testSite2");
-		tester.setName("Tester2");
-		tester.start(new TimeWindow(TimeWindow.UNIT.YEAR, 1));
-//		sb = "segment().site('testSite2').and(rule(PAGEVIEW).page('testPage2').count(2))";
-		sb = loadContent("src/test/resources/segments/newdsl/pageview_2.json");
-		tester.setContent(sb);
-		service.add(tester);
-		
-		testSeg2_id = tester.getId();
+		big_spender = createSegment(service, "Big Spender", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/big_spender.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 
-		
-		
-		userSegmenteGenerator = new UserSegmentGenerator(analytics, new JsonDsl(new ServiceRegistry()), service);
+		ServiceRegistry registry = new ServiceRegistry();
+		registry.register(MetricsService.class, (MetricsService) new MetricsService() {
+			@Override
+			public Number getKpi(String name, String site, long start, long end) {
+				return 50d;
+			}
+		});
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(registry), service);
+	}
+
+	@AfterClass
+	public void tearDownClass() throws InterruptedException, Exception {
+	}
+
+	@BeforeMethod
+	public void setUp() {
+	}
+
+	@AfterMethod
+	public void tearDown() {
 	}
 
 	/**
@@ -106,37 +102,37 @@ public class PageViewTest extends AbstractTest {
 	 * @throws java.lang.Exception
 	 */
 	@Test
-	public void test_pageview_rule() throws Exception {
+	public void test_ecommerce_order_rule() throws Exception {
 
-		System.out.println("testing pageview rule");
+		System.out.println("testing event rule");
 
-		JSONObject event = new JSONObject();
-//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-		event.put("_timestamp", System.currentTimeMillis());
-		event.put("ua", "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:38.0) Gecko/20100101 Firefox/38.0");
-		event.put("userid", "klaus");
-		event.put(Fields._UUID.value(), UUID.randomUUID().toString());
-		event.put("fingerprint", "fp_klaus");
-		event.put("page", "testPage");
-		event.put("type", "page");
-		event.put("site", "testSite");
-		event.put("event", "pageview");
-
+		JSONObject event = getEvent("peter2", "visit");
 		analytics.track(TestHelper.event(event, new JSONObject()));
-
-
-		List<SegmentData> data = userSegmenteGenerator.generate("klaus");
-		assertThat(data).isNotEmpty();
-
 		
-		Set<String> segments = getRawSegments(data);
+		List<SegmentData> getList = userSegmentGenerator.generate("peter2");
+		assertThat(getList).isEmpty();
+		
+		
+		event = getEvent("peter2", "ecommerce_order");
+		event.put("c_order_total", "50.0");
+		analytics.track(TestHelper.event(event, new JSONObject()));
+		
+		getList = userSegmentGenerator.generate("peter2");
+		assertThat(getList).isNotEmpty();
+		Set<String> segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(big_spender);
+		
+	}
 
-		assertThat(segments).isNotNull();
-		assertThat(segments).containsExactly(testSeg_id);
-		assertThat(segments.contains(testSeg2_id)).isFalse();
-
-		data = userSegmenteGenerator.generate("klaus");
-		segments = getRawSegments(data);
-		assertThat(segments).containsExactly(testSeg_id);
+	private JSONObject getEvent(final String userid, final String eventName) {
+		// test event
+		JSONObject event = new JSONObject();
+		//		event.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		event.put("_timestamp", System.currentTimeMillis());
+		event.put("userid", userid);
+		event.put("site", "testSite");
+		event.put("event", eventName);
+		return event;
 	}
 }
