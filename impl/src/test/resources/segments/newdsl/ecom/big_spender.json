@@ -2,6 +2,6 @@
 	"site" : "testSite",
 	"conditional": "and",
 	"conditions": [
-		{ "conditional" : "ecommerce_aov_percentage", "percentage" : 200}
+		{ "conditional" : "ecommerce_aov_percentage", "percentage" : 200, "comparator" : "GREATER_EQUALS"}
 	]
 }

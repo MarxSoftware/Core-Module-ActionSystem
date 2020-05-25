@@ -30,6 +30,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterDouble;
 import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
 import java.lang.reflect.Type;
+import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,10 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 	private final ServiceRegistry registry;
 	
 	private float percentage = 150;
+	
+	private Comparator comparator = Comparator.GREATER_EQUALS;
+			
+			// 17:39
 
 	public ECommercePercentageOfOrderAverageValueRule(final ServiceRegistry registry) {
 		this.registry = registry;
@@ -58,6 +63,11 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 	
 	public ECommercePercentageOfOrderAverageValueRule setPercentage (final float percentage) {
 		this.percentage = percentage;
+		return this;
+	}
+	
+	public ECommercePercentageOfOrderAverageValueRule setComparator (final Comparator comparator) {
+		this.comparator = comparator;
 		return this;
 	}
 
@@ -105,7 +115,8 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 		try {
 			final Number order_average = service.getKpi("order_average_value", site, 0, System.currentTimeMillis());
 			double user_percentage = calculatePercentage(counter.get(userid), order_average.doubleValue());
-			if (user_percentage >= percentage) {
+//			if (user_percentage >= percentage) {
+			if (comparator.compare(user_percentage, percentage)) {
 				return true;
 			}
 		} catch (Exception e) {
@@ -142,6 +153,38 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 			return new ECommercePercentageOfOrderAverageValueRule(registry);
 		}
 
+	}
+	
+	public static enum Comparator {
+		EQUAL ((obtained, total) -> {
+			return obtained.compareTo(total) == 0;
+		}),
+		LESS ((obtained, total) -> {
+			return obtained.compareTo(total) < 0;
+		}),
+		GREATER ((obtained, total) -> {
+			return obtained.compareTo(total) > 0;
+		}),
+		LESS_EQUALS ((obtained, total) -> {
+			return LESS.function.apply(obtained, total)
+					|| EQUAL.function.apply(obtained, total);
+		}),
+		GREATER_EQUALS ((obtained, total) -> {
+			return GREATER.function.apply(obtained, total)
+					|| EQUAL.function.apply(obtained, total);
+		}),
+		
+		;
+		
+		private final BiFunction<Double, Double, Boolean> function;
+		
+		private Comparator (final BiFunction<Double, Double, Boolean> function) {
+			this.function = function;
+		}
+		
+		public boolean compare (final double obtained, final double total) {
+			return function.apply(obtained, total);
+		}
 	}
 
 }
