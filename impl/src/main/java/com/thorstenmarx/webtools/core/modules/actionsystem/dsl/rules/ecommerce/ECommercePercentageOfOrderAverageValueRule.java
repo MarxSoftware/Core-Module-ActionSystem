@@ -28,8 +28,11 @@ import com.thorstenmarx.webtools.api.actions.Conditional;
 import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterDouble;
+import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,19 +49,21 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 
 	private static final String EVENT = "ecommerce_order";
 
-	private final CounterDouble counter;
+	private final CounterDouble orderValueCounter;
+	private final CounterInt orderCounter;
+	private final Set<String> orders;
 
 	private final ServiceRegistry registry;
 	
 	private float percentage = 150;
 	
 	private Comparator comparator = Comparator.GREATER_EQUALS;
-			
-			// 17:39
 
 	public ECommercePercentageOfOrderAverageValueRule(final ServiceRegistry registry) {
 		this.registry = registry;
-		this.counter = new CounterDouble();
+		this.orderValueCounter = new CounterDouble();
+		this.orderCounter = new CounterInt();
+		this.orders = new HashSet<>();
 	}
 	
 	public ECommercePercentageOfOrderAverageValueRule setPercentage (final float percentage) {
@@ -73,7 +78,7 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 
 	@Override
 	public String toString() {
-		return "ECommerceBigSpenderRule{}";
+		return "ECommercePercentageOfOrderAverageValueRule{}";
 	}
 
 	@Override
@@ -91,13 +96,20 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 		final String docEvent = doc.document.getString("event");
 		if (EVENT.equals(docEvent)) {
 			final String userid = doc.document.getString("userid");
+			final String order_id = doc.document.getString("c_order_id");
 			final Object total = doc.document.get("c_order_total");
-			counter.add(userid, toDouble(total));
+			
+			
+			if (!orders.contains(order_id)) {
+				orders.add(order_id);
+				orderCounter.add(userid);
+				orderValueCounter.add(userid, toDouble(total));
+			}
 		}
 	}
 
 	@Override
-	public boolean affected(JSONObject event) {
+	public boolean affected(final JSONObject event) {
 		final String docEvent = event.getString("event");
 		if (EVENT.equals(docEvent)) {
 			return true;
@@ -106,15 +118,19 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 	}
 
 	@Override
-	public boolean matchs(String userid) {
+	public boolean matchs(final String userid) {
 		if (!registry.exists(MetricsService.class)) {
+			return false;
+		} else if (orderCounter.get(userid) == 0) {
 			return false;
 		}
 		MetricsService service = registry.single(MetricsService.class).get();
 		final String site = UserSegmentGenerator.CONTEXT.get() != null ? UserSegmentGenerator.CONTEXT.get().site : null;
 		try {
 			final Number order_average = service.getKpi("order_average_value", site, 0, System.currentTimeMillis());
-			double user_percentage = calculatePercentage(counter.get(userid), order_average.doubleValue());
+			
+			double user_value = orderValueCounter.get(userid) / orderCounter.get(userid);
+			double user_percentage = calculatePercentage(user_value, order_average.doubleValue());
 //			if (user_percentage >= percentage) {
 			if (comparator.compare(user_percentage, percentage)) {
 				return true;

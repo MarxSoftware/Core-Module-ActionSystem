@@ -81,6 +81,14 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 			}
 		});
 		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(registry), service);
+
+		System.out.println("generate base data");
+		for (int i = 0; i < 4; i++) {
+			JSONObject event = getEvent("klaus" + i, "ecommerce_order");
+			event.put("c_order_total", "50.0");
+			event.put("c_order_id", "order-" + i);
+			analytics.track(TestHelper.event(event, new JSONObject()));
+		}
 	}
 
 	@AfterClass
@@ -108,17 +116,12 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 		JSONObject event = getEvent("peter2", "visit");
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
-		for (int i = 0; i < 4; i++) {
-			event = getEvent("klaus" + i, "ecommerce_order");
-			event.put("c_order_total", "50.0");
-			analytics.track(TestHelper.event(event, new JSONObject()));
-		}
-
 		List<SegmentData> getList = userSegmentGenerator.generate("peter2");
 		assertThat(getList).isEmpty();
 
 		event = getEvent("peter2", "ecommerce_order");
 		event.put("c_order_total", "100.0");
+		event.put("c_order_id", "p1");
 		analytics.track(TestHelper.event(event, new JSONObject()));
 
 		getList = userSegmentGenerator.generate("peter2");
@@ -126,7 +129,88 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 		Set<String> segments = getRawSegments(getList);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(big_spender);
+	}
 
+	@Test
+	public void test_two_orders() throws Exception {
+
+		System.out.println("testing event rule");
+
+		JSONObject event = getEvent("peter3", "visit");
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		List<SegmentData> getList = userSegmentGenerator.generate("peter3");
+		assertThat(getList).isEmpty();
+
+		event = getEvent("peter3", "ecommerce_order");
+		event.put("c_order_total", "50.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		event = getEvent("peter3", "ecommerce_order");
+		event.put("c_order_total", "50.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		getList = userSegmentGenerator.generate("peter3");
+		assertThat(getList).isEmpty();
+	}
+
+	@Test
+	public void test_two_orders_2() throws Exception {
+
+		System.out.println("testing event rule");
+
+		final String USER_ID = "user" + System.nanoTime();
+
+		JSONObject event = getEvent(USER_ID, "visit");
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		List<SegmentData> getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isEmpty();
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "50.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "100.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isEmpty();
+	}
+
+	@Test
+	public void test_two_orders_3() throws Exception {
+
+		System.out.println("testing event rule");
+
+		final String USER_ID = "user" + System.nanoTime();
+
+		JSONObject event = getEvent(USER_ID, "visit");
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		List<SegmentData> getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isEmpty();
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "50.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "200.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isNotEmpty();
+		Set<String> segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(big_spender);
 	}
 
 	private JSONObject getEvent(final String userid, final String eventName) {
