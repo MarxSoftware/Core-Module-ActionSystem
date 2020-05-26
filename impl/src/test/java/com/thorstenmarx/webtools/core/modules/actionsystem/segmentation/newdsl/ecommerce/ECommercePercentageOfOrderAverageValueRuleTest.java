@@ -57,7 +57,7 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 	private UserSegmentGenerator userSegmentGenerator;
 
 	String big_spender;
-	String not_buyer_id;
+	String not_big_spender_id;
 
 	@BeforeClass
 	public void setUpClass() throws IOException, InvalidSegmentException {
@@ -70,6 +70,7 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 		service = new EntitiesSegmentService(entities());
 
 		big_spender = createSegment(service, "Big Spender", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/big_spender.json"), "testSite");
+		not_big_spender_id = createSegment(service, "No Big Spender", new TimeWindow(TimeWindow.UNIT.YEAR, 1), loadContent("src/test/resources/segments/newdsl/ecom/not_big_spender.json"), "testSite");
 
 		System.out.println("service: " + service.all());
 
@@ -209,6 +210,43 @@ public class ECommercePercentageOfOrderAverageValueRuleTest extends AbstractTest
 		getList = userSegmentGenerator.generate(USER_ID);
 		assertThat(getList).isNotEmpty();
 		Set<String> segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(big_spender);
+	}
+	
+		@Test
+	public void test_no_big_spender() throws Exception {
+
+		System.out.println("testing event rule");
+
+		final String USER_ID = "user" + System.nanoTime();
+
+		JSONObject event = getEvent(USER_ID, "visit");
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		List<SegmentData> getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isEmpty();
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "10.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+		
+		getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isNotEmpty();
+		Set<String> segments = getRawSegments(getList);
+		assertThat(segments).isNotEmpty();
+		assertThat(segments).containsExactly(not_big_spender_id);
+	
+
+		event = getEvent(USER_ID, "ecommerce_order");
+		event.put("c_order_total", "200.0");
+		event.put("c_order_id", "p" + System.nanoTime());
+		analytics.track(TestHelper.event(event, new JSONObject()));
+
+		getList = userSegmentGenerator.generate(USER_ID);
+		assertThat(getList).isNotEmpty();
+		segments = getRawSegments(getList);
 		assertThat(segments).isNotEmpty();
 		assertThat(segments).containsExactly(big_spender);
 	}
