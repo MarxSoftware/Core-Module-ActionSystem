@@ -33,9 +33,9 @@ import javax.inject.Inject;
 @Extension(ModuleLifeCycleExtension.class)
 public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtension {
 
-	@Inject
+//	@Inject
 	private AnalyticsDB analyticsDb;
-	@Inject
+//	@Inject
 	private Entities entities;
 
 	protected static UserSegmentGenerator userSegmentGenerator;
@@ -45,6 +45,8 @@ public class CoreModuleActionSystemModuleLifeCycle extends ModuleLifeCycleExtens
 	@Override
 	public void activate() {
 		if (segmentService == null) {
+			entities = getContext().serviceRegistry().single(Entities.class).get();
+			analyticsDb = getContext().serviceRegistry().single(AnalyticsDB.class).get();
 			segmentService = new EntitiesSegmentService(entities);
 			userSegmentGenerator = new UserSegmentGenerator(analyticsDb, new JsonDsl(getContext().serviceRegistry()), segmentService, getContext().serviceRegistry());
 		}
