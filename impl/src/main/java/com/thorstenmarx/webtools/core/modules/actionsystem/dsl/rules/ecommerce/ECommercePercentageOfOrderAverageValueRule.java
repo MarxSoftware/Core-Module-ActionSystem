@@ -32,6 +32,7 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import org.slf4j.Logger;
@@ -124,7 +125,11 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 		} else if (orderCounter.get(userid) == 0) {
 			return false;
 		}
-		MetricsService service = registry.single(MetricsService.class).get();
+		Optional<MetricsService> serviceOptional = registry.single(MetricsService.class);
+		if (serviceOptional.isEmpty()) {
+			return false;
+		}
+		MetricsService service = serviceOptional.get();
 		final String site = UserSegmentGenerator.CONTEXT.get() != null ? UserSegmentGenerator.CONTEXT.get().site : null;
 		try {
 			final Number order_average = service.getKpi("order_average_value", site, 0, System.currentTimeMillis());
