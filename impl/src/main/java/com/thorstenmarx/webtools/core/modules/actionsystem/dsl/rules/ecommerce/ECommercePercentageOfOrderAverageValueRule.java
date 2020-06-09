@@ -29,7 +29,7 @@ import com.thorstenmarx.webtools.api.analytics.query.ShardDocument;
 import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterDouble;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
-import com.thorstenmarx.webtools.modules.metrics.api.MetricsService;
+import com.thorstenmarx.webtools.api.metrics.MetricsService;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Optional;
@@ -132,7 +132,7 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 		MetricsService service = serviceOptional.get();
 		final String site = UserSegmentGenerator.CONTEXT.get() != null ? UserSegmentGenerator.CONTEXT.get().site : null;
 		try {
-			final Number order_average = service.getKpi("order_average_value", site, 0, System.currentTimeMillis());
+			final Number order_average = service.getKpi("average_order_value", site, 0, System.currentTimeMillis());
 			
 			double user_value = orderValueCounter.get(userid) / orderCounter.get(userid);
 			double user_percentage = calculatePercentage(user_value, order_average.doubleValue());

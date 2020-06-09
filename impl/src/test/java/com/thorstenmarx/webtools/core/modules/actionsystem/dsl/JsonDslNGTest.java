@@ -5,7 +5,7 @@
  */
 package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
 
-import com.thorstenmarx.modules.api.ServiceRegistry;
+import com.thorstenmarx.modules.api.DefaultServiceRegistry;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,7 +19,7 @@ import org.testng.annotations.Test;
 public class JsonDslNGTest {
 	
 	
-	JsonDsl dslGenerator = new JsonDsl(new ServiceRegistry());
+	JsonDsl dslGenerator = new JsonDsl(new DefaultServiceRegistry());
 
 	@Test
 	public void test_parse_simple() throws IOException {

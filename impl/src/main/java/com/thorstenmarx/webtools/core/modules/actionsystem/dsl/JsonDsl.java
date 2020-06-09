@@ -46,7 +46,7 @@ public class JsonDsl {
 	private final ServiceRegistry serviceRegistry;
 
 	public JsonDsl(final ServiceRegistry serviceRegistry) {
-		this.serviceRegistry = new ServiceRegistry();
+		this.serviceRegistry = serviceRegistry;
 
 		conditionals.put("pageview", PageViewRule.class);
 		conditionals.put("campaign", CampaignRule.class);
@@ -60,6 +60,7 @@ public class JsonDsl {
 
 		conditionals.put("ecommerce_coupon", ECommerceCouponRule.class);
 		conditionals.put("ecommerce_order", ECommerceOrderRule.class);
+
 		conditionals.put("ecommerce_aov_percentage", ECommercePercentageOfOrderAverageValueRule.class);
 
 		this.gson = new GsonBuilder()

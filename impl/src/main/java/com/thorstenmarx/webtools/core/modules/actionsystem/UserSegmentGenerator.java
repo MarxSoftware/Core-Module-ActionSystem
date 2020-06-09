@@ -1,6 +1,7 @@
 package com.thorstenmarx.webtools.core.modules.actionsystem;
 
 import com.thorstenmarx.modules.api.ServiceRegistry;
+import com.thorstenmarx.modules.api.DefaultServiceRegistry;
 import com.thorstenmarx.webtools.api.actions.SegmentService;
 import com.thorstenmarx.webtools.api.actions.model.Segment;
 import com.thorstenmarx.webtools.api.analytics.AnalyticsDB;
@@ -35,7 +36,7 @@ public class UserSegmentGenerator {
 	public final static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
 
 	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService) {
-		this(db, dslRunner, segmentService, new ServiceRegistry());
+		this(db, dslRunner, segmentService, new DefaultServiceRegistry());
 	}
 
 	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService, final ServiceRegistry serviceRegistry) {

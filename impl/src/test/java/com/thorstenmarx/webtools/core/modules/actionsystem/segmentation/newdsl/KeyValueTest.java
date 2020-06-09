@@ -23,7 +23,7 @@ package com.thorstenmarx.webtools.core.modules.actionsystem.segmentation.newdsl;
  */
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.thorstenmarx.modules.api.ServiceRegistry;
+import com.thorstenmarx.modules.api.DefaultServiceRegistry;
 import com.thorstenmarx.webtools.api.TimeWindow;
 import com.thorstenmarx.webtools.api.actions.InvalidSegmentException;
 import com.thorstenmarx.webtools.api.datalayer.SegmentData;
@@ -98,7 +98,7 @@ public class KeyValueTest extends AbstractTest {
 		System.out.println("segment_product_multi_AND: " + segment_product_multi_AND);
 		System.out.println("segment_device: " + segment_device);
 
-		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(new ServiceRegistry()), service);
+		userSegmentGenerator = new UserSegmentGenerator(analytics, new JsonDsl(new DefaultServiceRegistry()), service);
 	}
 
 	
