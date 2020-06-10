@@ -6,6 +6,7 @@
 package com.thorstenmarx.webtools.core.modules.actionsystem.dsl;
 
 import com.thorstenmarx.modules.api.DefaultServiceRegistry;
+import com.thorstenmarx.webtools.core.modules.actionsystem.Context;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,8 +25,8 @@ public class JsonDslNGTest {
 	@Test
 	public void test_parse_simple() throws IOException {
 		String segment = new String(Files.readAllBytes(Paths.get("src/test/resources/segments/simple.json")));
-		
-		DSLSegment dslSegment = dslGenerator.parse(segment);
+		Context context = new Context();
+		DSLSegment dslSegment = dslGenerator.parse(segment, context);
 		
 		assertThat(dslSegment).isNotNull();
 		

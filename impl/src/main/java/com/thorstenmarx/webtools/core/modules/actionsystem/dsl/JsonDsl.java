@@ -45,6 +45,8 @@ public class JsonDsl {
 
 	private final ServiceRegistry serviceRegistry;
 
+	public static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
+
 	public JsonDsl(final ServiceRegistry serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
 
@@ -68,21 +70,27 @@ public class JsonDsl {
 				.create();
 	}
 
-	public DSLSegment parse(final String content) {
+	public DSLSegment parse(final String content, final Context context) {
 
-		JsonElement conditionElement = JsonParser.parseString(content);
+		try {
+			CONTEXT.set(context);
 
-		DSLSegment segment = new DSLSegment();
-		if (conditionElement.isJsonObject()) {
-			JsonObject object = conditionElement.getAsJsonObject();
+			JsonElement conditionElement = JsonParser.parseString(content);
+
+			DSLSegment segment = new DSLSegment();
+			if (conditionElement.isJsonObject()) {
+				JsonObject object = conditionElement.getAsJsonObject();
+			}
+			Optional<Conditional> handleCondition = handleCondition(conditionElement);
+			if (handleCondition.isPresent()) {
+				segment.conditional(handleCondition.get());
+			}
+
+			return segment;
+
+		} finally {
+			CONTEXT.remove();
 		}
-		Optional<Conditional> handleCondition = handleCondition(conditionElement);
-		if (handleCondition.isPresent()) {
-			segment.conditional(handleCondition.get());
-		}
-
-		return segment;
-
 	}
 
 	private Optional<Conditional> handleCondition(final JsonElement condition) {

@@ -11,4 +11,5 @@ package com.thorstenmarx.webtools.core.modules.actionsystem;
  */
 public class Context {
 	public String site;
+	public String userid;
 }

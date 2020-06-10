@@ -33,8 +33,6 @@ public class UserSegmentGenerator {
 
 	final ServiceRegistry serviceRegistry;
 
-	public final static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
-
 	public UserSegmentGenerator(final AnalyticsDB db, final JsonDsl dslRunner, final SegmentService segmentService) {
 		this(db, dslRunner, segmentService, new DefaultServiceRegistry());
 	}
@@ -51,37 +49,34 @@ public class UserSegmentGenerator {
 	}
 
 	public List<SegmentData> generate(final String userid, final String site) {
-		try {
-			Context context = new Context();
-			context.site = site;
-			CONTEXT.set(context);
-			return get(userid, site).stream().map((segment) -> {
+		Context context = new Context();
+		context.site = site;
+		context.userid = userid;
+		return get(context).stream().map((segment) -> {
 
-				final SegmentData segmentData = new SegmentData();
-				segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
-				return segmentData;
-			}).collect(Collectors.toList());
-		} finally {
-			CONTEXT.remove();
-		}
+			final SegmentData segmentData = new SegmentData();
+			segmentData.setSegment(new SegmentData.Segment(segment.getName(), segment.getExternalId(), segment.getId()));
+			return segmentData;
+		}).collect(Collectors.toList());
+
 	}
 
-	protected List<Segment> get(final String userid, final String site) {
+	protected List<Segment> get(Context context) {
 		List<Segment> activeSegments;
-		if (site != null) {
-			activeSegments = segmentService.criteria().add(Restrictions.EQ.eq("site", site)).query().stream()
+		if (context.site != null) {
+			activeSegments = segmentService.criteria().add(Restrictions.EQ.eq("site", context.site)).query().stream()
 					.filter(Segment::isActive)
 					.collect(Collectors.toList());
 		} else {
 			activeSegments = segmentService.all().stream().filter(Segment::isActive).collect(Collectors.toList());
 		}
-		return activeSegments.stream().filter((segment) -> segment_contains_userdata(segment, userid)).collect(Collectors.toList());
+		return activeSegments.stream().filter((segment) -> segment_contains_userdata(segment, context)).collect(Collectors.toList());
 	}
 
-	public boolean segment_contains_userdata(final Segment segment, final String userid) {
+	public boolean segment_contains_userdata(final Segment segment, final Context context) {
 		try {
 			Query simpleQuery = Query.builder().start(segment.start()).end(segment.end())
-					.term(Fields.UserId.value(), userid)
+					.term(Fields.UserId.value(), context.userid)
 					.term(Fields.Site.value(), segment.getSite())
 					.build();
 
@@ -89,10 +84,10 @@ public class UserSegmentGenerator {
 			future = db.query(simpleQuery, new Aggregator<Boolean>() {
 				@Override
 				public Boolean call() throws Exception {
-					DSLSegment dsl = dslRunner.parse(segment.getContent());
+					DSLSegment dsl = dslRunner.parse(segment.getContent(), context);
 					documents.stream().forEach(dsl::handle);
 					dsl.match();
-					return dsl.matchs(userid);
+					return dsl.matchs(context.userid);
 				}
 			});
 

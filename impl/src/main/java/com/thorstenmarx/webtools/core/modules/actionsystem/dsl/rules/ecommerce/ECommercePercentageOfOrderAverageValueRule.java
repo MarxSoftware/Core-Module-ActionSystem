@@ -30,6 +30,8 @@ import com.thorstenmarx.webtools.core.modules.actionsystem.UserSegmentGenerator;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterDouble;
 import com.thorstenmarx.webtools.core.modules.actionsystem.util.CounterInt;
 import com.thorstenmarx.webtools.api.metrics.MetricsService;
+import com.thorstenmarx.webtools.core.modules.actionsystem.Context;
+import com.thorstenmarx.webtools.core.modules.actionsystem.dsl.JsonDsl;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Optional;
@@ -59,9 +61,12 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 	private float percentage = 150;
 	
 	private Comparator comparator = Comparator.GREATER_EQUALS;
+	
+	private final Context context;
 
-	public ECommercePercentageOfOrderAverageValueRule(final ServiceRegistry registry) {
+	public ECommercePercentageOfOrderAverageValueRule(final ServiceRegistry registry, final Context context) {
 		this.registry = registry;
+		this.context = context;
 		this.orderValueCounter = new CounterDouble();
 		this.orderCounter = new CounterInt();
 		this.orders = new HashSet<>();
@@ -130,9 +135,8 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 			return false;
 		}
 		MetricsService service = serviceOptional.get();
-		final String site = UserSegmentGenerator.CONTEXT.get() != null ? UserSegmentGenerator.CONTEXT.get().site : null;
 		try {
-			final Number order_average = service.getKpi("average_order_value", site, 0, System.currentTimeMillis());
+			final Number order_average = service.getKpi("average_order_value", context.site, 0, System.currentTimeMillis());
 			
 			double user_value = orderValueCounter.get(userid) / orderCounter.get(userid);
 			double user_percentage = calculatePercentage(user_value, order_average.doubleValue());
@@ -171,7 +175,7 @@ public class ECommercePercentageOfOrderAverageValueRule implements Conditional {
 
 		@Override
 		public ECommercePercentageOfOrderAverageValueRule createInstance(final Type type) {
-			return new ECommercePercentageOfOrderAverageValueRule(registry);
+			return new ECommercePercentageOfOrderAverageValueRule(registry, JsonDsl.CONTEXT.get());
 		}
 
 	}
