@@ -138,7 +138,7 @@ public class EcommerceCouponTest extends AbstractTest {
 		event.put("userid", userid);
 		event.put("site", "testSite");
 		event.put("event", eventName);
-		event.put("order_coupons_count", couponCount);
+		event.put("c_order_coupons_count", couponCount);
 		return event;
 	}
 	
@@ -150,7 +150,7 @@ public class EcommerceCouponTest extends AbstractTest {
 		event.put("userid", userid);
 		event.put("site", "testSite");
 		event.put("event", eventName);
-		event.put("order_coupons_count", couponCount);
+		event.put("c_order_coupons_count", couponCount);
 		return event;
 	}
 }

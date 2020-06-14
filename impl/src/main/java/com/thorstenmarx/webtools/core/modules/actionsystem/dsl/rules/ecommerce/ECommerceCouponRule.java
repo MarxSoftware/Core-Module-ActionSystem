@@ -40,7 +40,7 @@ public class ECommerceCouponRule implements Conditional {
 
 	private static final String EVENT = "ecommerce_order";
 
-	private static final String COUPON_COUNT_FIELD_NAME = "order_coupons_count";
+	private static final String COUPON_COUNT_FIELD_NAME = "c_order_coupons_count";
 
 	private int count;
 	private boolean exact = false;
