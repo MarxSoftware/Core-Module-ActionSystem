@@ -40,8 +40,9 @@ import java.util.Set;
 public class CategoryRule implements Conditional {
 
 	public static final String RULE = "CATEGORY";
+	public static final String DEFAULT_FIELD = "c_categories";
 
-	private String field;
+	private String field = DEFAULT_FIELD;
 	private String path;
 	private int count;
 	private boolean exact = false;
